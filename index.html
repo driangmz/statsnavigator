@@ -3,61 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stats Navigator</title>
+    <title>Statistics Navigator Pro v6.0</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .mode-toggle {
-            cursor: pointer;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-
-        .mode-toggle:hover {
-            background-color: #e0e0e0;
-        }
-    </style>
 </head>
 <body>
-    <h1>Welcome to Stats Navigator</h1>
-    <div class="mode-toggle">Toggle Mode</div>
-    <script>
-        function calculateNormal(x) {
-            if (typeof x !== 'number') {
-                console.error('Invalid input: must be a number.');
-                return NaN;
-            }
-            return 0.5 * (1 + erf(x / Math.sqrt(2)));
-        }
-
-        function erf(x) {
-            // Implementation of the error function
-            if (typeof x !== 'number') {
-                console.error('Invalid input: must be a number.');
-                return NaN;
-            }
-            let sign = (x >= 0) ? 1 : -1;
-            x = Math.abs(x);
-            const a1 =  0.254829592;
-            const a2 = -0.284496736;
-            const a3 =  1.421413741;
-            const a4 = -1.453152027;
-            const a5 =  1.061405429;
-            const p = 0.3275911;
-            let t = 1.0 / (1.0 + p * x);
-            let y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t) * Math.exp(-x * x);
-            return sign * y;
-        }
-
-        function handleError() {
-            try {
-                // Some operation that might fail
-            } catch (error) {
-                console.error('An error occurred:', error);
-            }
-        }
-    </script>
+    <header>
+        <h1>Welcome to Statistics Navigator Pro v6.0</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Features</h2>
+            <ul>
+                <li>User-friendly interface</li>
+                <li>Advanced statistical functions</li>
+                <li>Real-time data visualization</li>
+                <li>Customizable reports</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Bug Fixes</h2>
+            <ul>
+                <li>Fixed issue with data import</li>
+                <li>Resolved UI rendering bugs</li>
+                <li>Improved performance with large datasets</li>
+                <li>Ensured cross-browser compatibility</li>
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2026 Statistics Navigator Team</p>
+    </footer>
 </body>
 </html>
