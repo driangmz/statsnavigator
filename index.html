@@ -3,116 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Zenith | CENTURION HYPER-NOVA</title>
+    <title>Nexus Zenith | CENTURION ULTIMA</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Inter:wght@300;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* CORE VARIABLES */
-            --bg: #030304;
-            --panel: rgba(18, 18, 24, 0.75);
-            --border: rgba(255, 255, 255, 0.08);
-            --text: #e0e0e0;
-            --text-dim: #71717a;
-            --accent: #00f2ff;
-            --secondary: #7000ff;
-            --success: #00ff9d;
-            --danger: #ff2e63;
-            --warning: #ffb700;
-            --card-bg: rgba(255, 255, 255, 0.02);
-            --card-hover: rgba(0, 242, 255, 0.08);
-            --font-mono: 'JetBrains Mono', monospace;
-            --font-main: 'Inter', sans-serif;
+            /* DEFAULT: CYBERPUNK */
+            --bg: #050507; --panel: rgba(20, 20, 25, 0.6); --border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff; --text-dim: #888; --accent: #00f2ff; --secondary: #7000ff;
+            --success: #00ff9d; --danger: #ff2e63; --warning: #ffb700;
+            --card-bg: rgba(255, 255, 255, 0.03); --card-hover: rgba(0, 242, 255, 0.05);
+            --font-mono: 'JetBrains Mono', monospace; --font-main: 'Inter', sans-serif;
             --glass: blur(20px);
             --shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
         }
 
         /* THEME: MIDNIGHT */
         [data-theme="midnight"] {
-            --bg: #020617; --panel: rgba(15, 23, 42, 0.8); --border: rgba(56, 189, 248, 0.2);
-            --text: #f8fafc; --text-dim: #64748b; --accent: #38bdf8; --secondary: #818cf8;
-            --card-bg: rgba(30, 41, 59, 0.4); --card-hover: rgba(56, 189, 248, 0.15);
+            --bg: #0f172a; --panel: rgba(30, 41, 59, 0.8); --border: rgba(148, 163, 184, 0.2);
+            --text: #f8fafc; --text-dim: #94a3b8; --accent: #38bdf8; --secondary: #818cf8;
+            --card-bg: rgba(255, 255, 255, 0.05); --card-hover: rgba(56, 189, 248, 0.1);
         }
         /* THEME: PAPER */
         [data-theme="paper"] {
-            --bg: #f3f4f6; --panel: rgba(255, 255, 255, 0.8); --border: rgba(0, 0, 0, 0.08);
-            --text: #1f2937; --text-dim: #6b7280; --accent: #2563eb; --secondary: #4f46e5;
-            --card-bg: #ffffff; --card-hover: #eff6ff; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --bg: #f5f5f7; --panel: #ffffff; --border: #e1e1e6;
+            --text: #1d1d1f; --text-dim: #86868b; --accent: #0071e3; --secondary: #5e5ce6;
+            --card-bg: #fbfbfd; --card-hover: #f2f2f7; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         /* THEME: FOREST */
         [data-theme="forest"] {
-            --bg: #052e16; --panel: rgba(6, 78, 59, 0.6); --border: rgba(52, 211, 153, 0.2);
-            --text: #ecfdf5; --text-dim: #6ee7b7; --accent: #34d399; --secondary: #10b981;
-            --card-bg: rgba(6, 95, 70, 0.3); --card-hover: rgba(52, 211, 153, 0.15);
+            --bg: #0a1f1c; --panel: rgba(20, 40, 35, 0.8); --border: rgba(100, 200, 150, 0.2);
+            --text: #e0f2f1; --text-dim: #80cbc4; --accent: #00bfa5; --secondary: #69f0ae;
+            --card-bg: rgba(0, 191, 165, 0.05); --card-hover: rgba(0, 191, 165, 0.15);
         }
         /* THEME: SUNSET */
         [data-theme="sunset"] {
-            --bg: #450a0a; --panel: rgba(127, 29, 29, 0.5); --border: rgba(251, 113, 133, 0.2);
-            --text: #fff1f2; --text-dim: #fda4af; --accent: #fb7185; --secondary: #f43f5e;
-            --card-bg: rgba(159, 18, 57, 0.3); --card-hover: rgba(251, 113, 133, 0.15);
+            --bg: #2d0a15; --panel: rgba(60, 20, 30, 0.8); --border: rgba(255, 100, 100, 0.2);
+            --text: #ffddee; --text-dim: #ff8fa3; --accent: #ff4757; --secondary: #ffa502;
+            --card-bg: rgba(255, 71, 87, 0.05); --card-hover: rgba(255, 71, 87, 0.15);
         }
 
-        /* RESET & BASE */
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s, border-color 0.3s, transform 0.2s; }
-        body { background: var(--bg); color: var(--text); font-family: var(--font-main); height: 100vh; overflow: hidden; display: flex; font-size: 14px; }
-        
-        /* SCROLLBARS */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; transition: background 0.4s, color 0.4s, border-color 0.4s; }
+        body { background: var(--bg); color: var(--text); font-family: var(--font-main); height: 100vh; overflow: hidden; display: flex; }
 
         /* --- SIDEBAR --- */
         aside {
-            width: 380px; background: var(--panel); border-right: 1px solid var(--border);
-            padding: 30px; display: flex; flex-direction: column; gap: 20px; z-index: 20;
+            width: 360px; background: var(--panel); border-right: 1px solid var(--border);
+            padding: 30px; display: flex; flex-direction: column; gap: 20px; z-index: 10;
             backdrop-filter: var(--glass);
         }
-        .header-row { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .brand { font-size: 1.4rem; font-weight: 900; letter-spacing: -0.5px; display: flex; flex-direction: column; line-height: 1; }
-        .brand span { color: var(--accent); font-size: 0.8em; letter-spacing: 2px; margin-top: 4px; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; }
+        .brand { font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; }
+        .brand span { color: var(--accent); }
         
         .icon-btn {
             background: var(--card-bg); border: 1px solid var(--border); color: var(--text);
-            width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: grid; place-items: center;
-            font-size: 1.2rem;
+            padding: 10px; border-radius: 50%; cursor: pointer; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
         }
-        .icon-btn:hover { background: var(--border); color: var(--accent); transform: rotate(15deg); }
+        .icon-btn:hover { background: var(--border); color: var(--accent); }
 
-        /* THEME MENU */
-        #theme-menu {
-            position: absolute; top: 80px; right: 20px; background: var(--bg); border: 1px solid var(--border);
-            border-radius: 16px; padding: 8px; display: none; flex-direction: column; gap: 4px;
-            box-shadow: var(--shadow); z-index: 100; width: 180px;
-        }
-        .theme-opt { padding: 10px 15px; cursor: pointer; color: var(--text-dim); font-size: 0.8rem; border-radius: 8px; font-weight: 600; }
-        .theme-opt:hover { background: var(--card-hover); color: var(--accent); }
-        .theme-opt.active { background: var(--card-bg); color: var(--accent); border: 1px solid var(--border); }
-
-        /* INPUT AREA */
-        .input-wrapper { position: relative; flex: 1; display: flex; flex-direction: column; }
-        .input-label { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
         textarea {
             flex: 1; background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: 16px; padding: 20px; color: var(--accent); font-family: var(--font-mono);
-            font-size: 0.85rem; resize: none; line-height: 1.5; box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px; padding: 15px; color: var(--accent); font-family: var(--font-mono);
+            font-size: 0.85rem; resize: none; transition: 0.3s;
         }
-        textarea:focus { border-color: var(--accent); background: var(--card-hover); box-shadow: 0 0 0 2px rgba(0, 242, 255, 0.1); }
+        textarea:focus { border-color: var(--accent); background: var(--card-hover); }
 
-        /* BUTTONS */
-        .btn-group { display: flex; gap: 10px; }
         .btn-run {
-            padding: 16px; border-radius: 12px; background: var(--accent); color: var(--bg);
+            padding: 16px; border-radius: 8px; background: var(--accent); color: var(--bg);
             border: none; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
-            display: flex; align-items: center; justify-content: center; gap: 8px; position: relative; overflow: hidden;
         }
-        .btn-run::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: 0.5s;
-        }
-        .btn-run:hover::after { left: 100%; }
-        .btn-run:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px var(--accent); filter: brightness(1.1); }
+        .btn-run:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 5px 15px var(--card-hover); }
         
         .btn-sec { background: var(--card-bg); color: var(--text-dim); border: 1px solid var(--border); font-weight: 600; }
         .btn-sec:hover { border-color: var(--text-dim); color: var(--text); background: var(--card-hover); }
@@ -128,7 +90,7 @@
         .log-msg { color: var(--text); }
 
         /* --- MAIN AREA --- */
-        main { flex: 1; display: grid; grid-template-rows: auto 1fr; overflow: hidden; position: relative; background: var(--bg); }
+        main { flex: 1; display: grid; grid-template-rows: auto 1fr; overflow: hidden; position: relative; }
 
         .nav-bar {
             display: flex; gap: 5px; padding: 15px 30px; border-bottom: 1px solid var(--border);
@@ -194,6 +156,14 @@
         }
         .close-btn:hover { background: var(--danger); border-color: var(--danger); }
 
+        /* THEME MENU */
+        #theme-menu {
+            position: absolute; top: 70px; left: 30px; background: var(--panel); border: 1px solid var(--border);
+            border-radius: 12px; padding: 10px; display: none; flex-direction: column; gap: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 100;
+        }
+        .theme-opt { padding: 10px 20px; cursor: pointer; color: var(--text-dim); font-size: 0.8rem; border-radius: 8px; }
+        .theme-opt:hover { background: var(--card-hover); color: var(--accent); }
+
         /* VERSION LOG */
         .v-entry { position: relative; padding-left: 25px; margin-bottom: 25px; }
         .v-entry::before { content: ''; position: absolute; left: 0; top: 5px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); }
@@ -203,13 +173,12 @@
         .v-date { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
         .v-desc { font-size: 0.9rem; line-height: 1.6; color: var(--text); }
 
-        /* Mobile */
-        @media (max-width: 1000px) {
+        @media (max-width: 900px) {
             body { flex-direction: column; height: auto; overflow: auto; }
-            aside { width: 100%; height: auto; padding: 20px; }
+            aside { width: 100%; height: auto; }
             main { height: auto; }
-            .chart-grid { grid-template-columns: 1fr; }
-            .modal-card { width: 90%; padding: 25px; }
+            .chart-grid { grid-template-columns: 1fr; height: auto; }
+            .chart-box { height: 300px; }
         }
     </style>
 </head>
@@ -222,22 +191,20 @@
         </div>
         
         <div id="theme-menu">
-            <div class="theme-opt active" onclick="setTheme('default', this)">Cyberpunk (Default)</div>
-            <div class="theme-opt" onclick="setTheme('midnight', this)">Midnight Blue</div>
-            <div class="theme-opt" onclick="setTheme('paper', this)">Paper White</div>
-            <div class="theme-opt" onclick="setTheme('forest', this)">Deep Forest</div>
-            <div class="theme-opt" onclick="setTheme('sunset', this)">Crimson Sunset</div>
+            <div class="theme-opt" onclick="setTheme('default')">Cyberpunk (Default)</div>
+            <div class="theme-opt" onclick="setTheme('midnight')">Midnight Blue</div>
+            <div class="theme-opt" onclick="setTheme('paper')">Paper White</div>
+            <div class="theme-opt" onclick="setTheme('forest')">Deep Forest</div>
+            <div class="theme-opt" onclick="setTheme('sunset')">Crimson Sunset</div>
         </div>
         
         <div class="input-wrapper">
             <div class="input-label">Data Input Stream</div>
-            <textarea id="input" placeholder="Enter numeric dataset (e.g. 10, 45, 23.5, -5...)"></textarea>
+            <textarea id="input" placeholder="Paste data set..."></textarea>
         </div>
         
         <div class="btn-group">
-            <button class="btn-run" style="flex:2" onclick="compute()">
-                <span style="font-size:1.2em">⚡</span> Initialize
-            </button>
+            <button class="btn-run" style="flex:2" onclick="compute()">Analyze</button>
             <button class="btn-run btn-sec" style="flex:1" onclick="demo()">Demo</button>
             <button class="btn-run btn-sec" style="flex:1" onclick="clearData()">Clr</button>
         </div>
@@ -246,8 +213,9 @@
             <div class="log-entry"><span class="log-time">[SYS]</span> <span class="log-msg">Centurion Hyper-Nova v12000 ready.</span></div>
         </div>
 
-        <div style="font-size:0.7rem; color:var(--text-dim); text-align:center; cursor:pointer; opacity:0.7;" onclick="openVersionModal()">
-            SYSTEM VERSION: <span style="color:var(--accent); font-weight:700;">v12000.0</span>
+        <div style="margin-top:auto; font-size:0.75rem; color:var(--text-dim); border-top:1px solid var(--border); padding-top:15px; cursor:pointer;" onclick="openVersionModal()">
+            <div>System: <span style="color:var(--accent)">v20000.0 ULTIMA</span></div>
+            <div style="font-size:0.65rem; margin-top:2px;">Click for Changelog</div>
         </div>
     </aside>
 
@@ -257,7 +225,8 @@
             <button class="tab-btn" onclick="tab('adv', this)">Advanced Means</button>
             <button class="tab-btn" onclick="tab('dist', this)">Distribution</button>
             <button class="tab-btn" onclick="tab('risk', this)">Risk & Signal</button>
-            <button class="tab-btn" onclick="tab('percent', this)">Percentile Matrix</button>
+            <button class="tab-btn" onclick="tab('percent', this)">Percentiles</button>
+            <button class="tab-btn" onclick="tab('inference', this)">Inference</button>
             <button class="tab-btn" onclick="tab('matrix', this)">Data Matrix</button>
             <button class="tab-btn" onclick="tab('viz', this)">Visual Kernel</button>
         </div>
@@ -267,6 +236,7 @@
         <div id="view-dist" class="viewport"><div class="stat-grid" id="grid-dist"></div></div>
         <div id="view-risk" class="viewport"><div class="stat-grid" id="grid-risk"></div></div>
         <div id="view-percent" class="viewport"><div class="stat-grid" id="grid-percent"></div></div>
+        <div id="view-inference" class="viewport"><div class="stat-grid" id="grid-inference"></div></div>
         
         <div id="view-matrix" class="viewport">
             <div class="table-container">
@@ -276,7 +246,7 @@
                 </table>
             </div>
         </div>
-        
+
         <div id="view-viz" class="viewport">
             <div class="chart-grid">
                 <div class="chart-box">
@@ -305,7 +275,7 @@
             <h5 style="color:var(--text-dim); text-transform:uppercase; letter-spacing:2px; margin-bottom:10px;">Formula Inspector</h5>
             <h2 id="f-title" style="color:var(--text); margin-bottom:10px; font-size:2rem;">Metric</h2>
             <div class="modal-math" id="f-math">Formula</div>
-            <p id="f-desc" style="color:var(--text); font-size:1.1rem; line-height:1.6;"></p>
+            <p id="f-desc" style="color:var(--text-dim); font-size:1.1rem; line-height:1.6;"></p>
         </div>
     </div>
 
@@ -315,8 +285,8 @@
             <h2 style="color:var(--text); margin-bottom:30px;">SYSTEM CHANGELOG</h2>
             
             <div class="v-entry">
-                <div class="v-ver">v12000.0 HYPER-NOVA</div>
-                <div class="v-date">Latest Build</div>
+                <div class="v-ver">v20000.0 HYPER-NOVA</div>
+                <div class="v-date">Current Build</div>
                 <div class="v-desc">Added Data Matrix Tab for row-by-row Z-score analysis. Implemented System Console for real-time logging. Enhanced Glassmorphism UI and improved Chart.js rendering engine.</div>
             </div>
             <div class="v-entry">
@@ -327,7 +297,7 @@
             <div class="v-entry">
                 <div class="v-ver">v10000.0 OMNI-LIGHT</div>
                 <div class="v-date">Legacy Build</div>
-                <div class="v-desc">Added Dark/Light Mode toggle. Integrated 120+ Function Library including Jarque-Bera and Entropy.</div>
+                <div class="v-desc">Added Dark/Light Mode toggle. Integrated 120+ Function Library including Jarque-Bera and Entropy. Formula Inspector added.</div>
             </div>
         </div>
     </div>
@@ -350,56 +320,42 @@
         menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
     }
     
-    function setTheme(theme, el) {
+    function setTheme(theme) {
         document.body.setAttribute('data-theme', theme);
         document.getElementById('theme-menu').style.display = 'none';
-        document.querySelectorAll('.theme-opt').forEach(o => o.classList.remove('active'));
-        el.classList.add('active');
         log(`Theme switched to: ${theme.toUpperCase()}`);
         if(currentData.length > 0) renderCharts(currentData);
     }
 
     // --- FORMULA LIBRARY (EXPANDED) ---
     const LIB = {
-        "Arithmetic Mean": { m: "μ = (Σ x) / N", d: "The sum of all values divided by the number of values. Represents the central balance point." },
-        "Median": { m: "P₅₀ (Middle Value)", d: "The midpoint of the sorted dataset. Robust against outliers." },
-        "Mode": { m: "Max(Frequency)", d: "The most frequent value(s) in the dataset." },
-        "Range": { m: "Max - Min", d: "The absolute spread between the largest and smallest values." },
-        "Sample Std Dev": { m: "s = √[Σ(x-μ)² / (N-1)]", d: "Average distance of data points from the mean (Unbiased)." },
-        "Sample Variance": { m: "s²", d: "The square of the standard deviation." },
-        "Mean Deviation": { m: "MAD = Σ|x-μ| / N", d: "Average absolute difference from the mean." },
-        "IQR": { m: "Q₃ - Q₁", d: "Interquartile Range. The spread of the middle 50%." },
-        "Sum": { m: "Σ x", d: "Total summation of all values." },
-        "Count (N)": { m: "N", d: "Total number of observations." },
-        
-        "Geometric Mean": { m: "(Π x)^(1/N)", d: "Nth root of product. Used for growth rates." },
-        "Harmonic Mean": { m: "N / Σ(1/x)", d: "Reciprocal of average of reciprocals. Used for rates." },
-        "Root Mean Square": { m: "√(Σ x² / N)", d: "Measure of magnitude for varying quantities." },
-        "Midrange": { m: "(Max + Min) / 2", d: "Arithmetic mean of the extremes." },
-        "Trimean": { m: "(Q₁ + 2M + Q₃) / 4", d: "Weighted average of quartiles and median." },
-        "Midhinge": { m: "(Q₁ + Q₃) / 2", d: "Average of the first and third quartiles." },
-        
-        "Skewness (Fisher)": { m: "Σ(x-μ)³ / (N·s³)", d: "Measure of asymmetry. +Right tail, -Left tail." },
-        "Kurtosis (Excess)": { m: "[Σ(x-μ)⁴ / (N·s⁴)] - 3", d: "Measure of peakedness relative to normal dist." },
-        "Jarque-Bera": { m: "(N/6)·(S² + (K-3)²/4)", d: "Test for normality based on Skew/Kurt." },
-        "Coeff of Variation": { m: "(s/μ) × 100", d: "Relative volatility percentage." },
-        
-        "Standard Error": { m: "s / √N", d: "Accuracy of the sample mean estimate." },
-        "Sharpe Ratio": { m: "(μ - Rf) / s", d: "Return per unit of risk (Rf assumed 0)." },
-        "Sortino Ratio": { m: "(μ - T) / σ_down", d: "Return per unit of downside risk." },
-        "Entropy": { m: "-Σ p log(p)", d: "Shannon information entropy (Uncertainty)." },
-        "Signal Energy": { m: "Σ x²", d: "Total energy of the signal sequence." },
-        "Crest Factor": { m: "|Peak| / RMS", d: "Ratio of peak value to effective value." },
-        
+        "Arithmetic Mean": { m: "μ = (Σ x) / N", d: "Sum of all values divided by count." },
+        "Median": { m: "Middle Value", d: "The midpoint of the sorted dataset." },
+        "Mode": { m: "Max(Freq(x))", d: "Most frequent value(s)." },
+        "Range": { m: "Max - Min", d: "Difference between largest and smallest value." },
+        "Std Dev (Sample)": { m: "s = √[Σ(x-μ)² / (N-1)]", d: "Average deviation from mean (Unbiased)." },
+        "Variance (Sample)": { m: "s²", d: "Squared standard deviation." },
+        "Mean Deviation": { m: "Σ|x-μ| / N", d: "Average absolute difference from mean." },
+        "IQR": { m: "Q3 - Q1", d: "Spread of the middle 50%." },
+        "Sum": { m: "Σ x", d: "Total of all values." },
+        "Count (N)": { m: "N", d: "Number of observations." },
+        "Geometric Mean": { m: "(Π x)^(1/N)", d: "Nth root of product. For growth rates." },
+        "Harmonic Mean": { m: "N / Σ(1/x)", d: "Reciprocal of average of reciprocals. For rates." },
+        "Root Mean Square": { m: "√(Σ x² / N)", d: "Measure of magnitude (Physics/Signal)." },
+        "Skewness (Fisher)": { m: "Σ(x-μ)³ / (N·s³)", d: "Asymmetry measure. +Right, -Left." },
+        "Kurtosis (Excess)": { m: "[Σ(x-μ)⁴ / (N·s⁴)] - 3", d: "Peak measure. +Leptokurtic, -Platykurtic." },
+        "Jarque-Bera": { m: "(N/6)·(S² + (K-3)²/4)", d: "Normality test based on Skew/Kurtosis." },
+        "Standard Error": { m: "s / √N", d: "Precision of the sample mean." },
+        "Sharpe Ratio": { m: "(μ - Rf) / s", d: "Return per unit of risk (Rf=0)." },
+        "Entropy": { m: "-Σ p log(p)", d: "Shannon information entropy." },
+        "Signal Energy": { m: "Σ x²", d: "Total signal strength." },
         "95% CI Lower": { m: "μ - 1.96(SE)", d: "Lower bound of 95% confidence interval." },
-        "95% CI Upper": { m: "μ + 1.96(SE)", d: "Upper bound of 95% confidence interval." },
-        "T-Statistic": { m: "μ / SE", d: "Test statistic for null hypothesis μ=0." }
+        "95% CI Upper": { m: "μ + 1.96(SE)", d: "Upper bound of 95% confidence interval." }
     };
 
     let charts = [];
     let currentData = [];
 
-    // --- LOGIC ---
     function tab(id, el) {
         document.querySelectorAll('.viewport').forEach(v => v.classList.remove('active'));
         document.getElementById('view-' + id).classList.add('active');
@@ -414,7 +370,7 @@
     }
 
     function inspect(key) {
-        const info = LIB[key] || { m: "Formula not indexed.", d: "Standard statistical metric." };
+        const info = LIB[key] || { m: "Formula loading...", d: "Standard metric." };
         document.getElementById('f-title').innerText = key;
         document.getElementById('f-math').innerText = info.m;
         document.getElementById('f-desc').innerText = info.d;
@@ -431,7 +387,6 @@
     }
 
     function compute() {
-        log("Parsing input stream...");
         const raw = document.getElementById('input').value;
         const data = raw.split(/[,\s\n]+/).map(Number).filter(n => !isNaN(n));
         
@@ -459,8 +414,6 @@
         // Calculations
         const median = getP(0.5);
         const q1 = getP(0.25), q3 = getP(0.75);
-        
-        // Mode
         const modeMap = {}; data.forEach(x=>modeMap[x]=(modeMap[x]||0)+1);
         const maxF = Math.max(...Object.values(modeMap));
         const mode = Object.keys(modeMap).filter(k=>modeMap[k]===maxF).slice(0,3).join(', ');
@@ -474,7 +427,6 @@
         const skew = m3/Math.pow(Math.sqrt(ss/n),3);
         const kurt = (m4/Math.pow(Math.sqrt(ss/n),4))-3;
         const sem = std/Math.sqrt(n);
-        
         const downside = data.filter(x=>x<0);
         const sortino = downside.length ? mean/Math.sqrt(downside.reduce((a,b)=>a+b*b,0)/downside.length) : 0;
 
