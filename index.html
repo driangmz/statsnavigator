@@ -3,209 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENTURION OMNI-LAB | Nexus Zenith</title>
+    <title>Nexus Zenith | SINGULARITY</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #030305; --card: rgba(20, 20, 30, 0.6); --border: rgba(255, 255, 255, 0.08);
-            --primary: #00f2ff; --accent: #7000ff; --success: #00ff9d; --danger: #ff2e63;
-            --radius: 20px; --font-mono: 'JetBrains Mono', monospace;
+            --bg: #030304; --panel: rgba(20, 20, 25, 0.7); --border: rgba(255, 255, 255, 0.08);
+            --primary: #00f0ff; --accent: #7000ff; --success: #00ff9d; --danger: #ff2e63;
+            --text: #ffffff; --dim: #888;
+            --font-main: system-ui, -apple-system, sans-serif;
+            --font-mono: 'Courier New', Courier, monospace;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        body { background: var(--bg); color: var(--text); font-family: var(--font-main); height: 100vh; overflow: hidden; display: flex; }
 
-        #glass-frame {
-            display: grid; grid-template-columns: 360px 1fr; height: 100vh;
-            background: radial-gradient(circle at top left, #10101a, #030305);
-        }
-
-        /* --- SIDEBAR & INPUT --- */
+        /* --- 1. SIDEBAR COMMAND --- */
         aside {
-            background: rgba(0, 0, 0, 0.4); border-right: 1px solid var(--border);
-            padding: 40px 30px; display: flex; flex-direction: column; gap: 25px;
+            width: 380px; background: rgba(0,0,0,0.5); border-right: 1px solid var(--border);
+            padding: 30px; display: flex; flex-direction: column; gap: 20px; z-index: 10;
+            backdrop-filter: blur(20px);
         }
-        .logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .brand { font-size: 2rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; background: linear-gradient(to right, #fff, var(--dim)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .brand span { color: var(--primary); -webkit-text-fill-color: initial; }
         
         textarea {
-            width: 100%; height: 280px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 20px; color: var(--primary); font-family: var(--font-mono);
-            font-size: 0.85rem; line-height: 1.6; transition: 0.3s; resize: none;
+            flex: 1; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; color: var(--primary); font-family: var(--font-mono);
+            font-size: 0.9rem; resize: none; transition: 0.3s;
         }
-        textarea:focus { border-color: var(--primary); background: rgba(255, 255, 255, 0.05); }
+        textarea:focus { border-color: var(--primary); background: rgba(0, 240, 255, 0.05); }
 
-        .btn-ignite {
-            background: #fff; color: #000; border: none; padding: 18px; border-radius: 50px;
-            font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .btn-group { display: flex; gap: 10px; }
+        .btn {
+            padding: 15px; border-radius: 8px; border: 1px solid var(--border);
+            background: rgba(255,255,255,0.05); color: #fff; cursor: pointer; font-weight: 700;
+            transition: 0.2s; flex: 1; text-transform: uppercase; font-size: 0.8rem;
         }
-        .btn-ignite:hover { transform: scale(1.02); background: var(--primary); }
+        .btn-primary { background: var(--primary); color: #000; border: none; }
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
 
-        /* --- MAIN VIEW --- */
-        main { display: flex; flex-direction: column; overflow: hidden; padding: 20px; }
-        .nav-scroller { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
-        .nav-scroller::-webkit-scrollbar { display: none; }
-        .tab {
-            padding: 10px 24px; background: var(--card); border: 1px solid var(--border);
-            border-radius: 50px; font-size: 0.75rem; font-weight: 600; cursor: pointer;
-            white-space: nowrap; transition: 0.2s; color: #666;
-        }
-        .tab.active { background: #fff; color: #000; border-color: #fff; }
-
-        .viewport { flex: 1; overflow-y: auto; padding: 10px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+        /* --- 2. MAIN WORKSPACE --- */
+        main { flex: 1; display: grid; grid-template-rows: auto 1fr; overflow: hidden; position: relative; }
         
-        .card {
-            background: var(--card); border: 1px solid var(--border); padding: 25px;
-            border-radius: var(--radius); transition: 0.3s; backdrop-filter: blur(10px);
+        /* Tabs */
+        .tabs { display: flex; gap: 5px; padding: 15px 30px; border-bottom: 1px solid var(--border); overflow-x: auto; background: rgba(0,0,0,0.3); }
+        .tab {
+            padding: 10px 20px; border-radius: 50px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+            color: var(--dim); border: 1px solid transparent; transition: 0.3s; white-space: nowrap;
         }
-        .card:hover { border-color: var(--primary); transform: translateY(-3px); }
-        .card .label { font-size: 0.65rem; color: #777; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
-        .card .value { font-size: 1.4rem; font-weight: 700; font-family: var(--font-mono); color: #fff; }
+        .tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .tab.active { color: #000; background: var(--primary); border-color: var(--primary); }
 
-        .chart-box { background: var(--card); border-radius: var(--radius); padding: 30px; border: 1px solid var(--border); height: 450px; }
+        /* Content Scroll */
+        .viewport { overflow-y: auto; padding: 30px; display: none; }
+        .viewport.active { display: block; }
 
-        #health-gauge { margin-top: auto; padding: 20px; border-radius: var(--radius); background: rgba(255,255,255,0.02); text-align: center; }
-        .gauge-val { font-size: 2.5rem; font-weight: 900; font-family: var(--font-mono); }
+        /* Grids */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
+        .card {
+            background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+            cursor: help; transition: 0.2s; position: relative; overflow: hidden;
+        }
+        .card:hover { border-color: var(--primary); transform: translateY(-4px); background: rgba(0, 240, 255, 0.05); }
+        .card h5 { font-size: 0.7rem; color: var(--dim); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+        .card .val { font-size: 1.5rem; font-weight: 700; color: #fff; font-family: var(--font-mono); }
+        .card::after { content: 'FORMULA'; position: absolute; top: 10px; right: 10px; font-size: 0.5rem; color: var(--primary); opacity: 0; transition: 0.3s; border: 1px solid var(--primary); padding: 2px 4px; border-radius: 4px; }
+        .card:hover::after { opacity: 1; }
+
+        /* Section Headers */
+        h2 { font-size: 1rem; color: var(--primary); border-left: 3px solid var(--primary); padding-left: 15px; margin: 30px 0 20px; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Visuals */
+        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 500px; }
+        .chart-box { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
+
+        /* --- 3. FORMULA MODAL --- */
+        #modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 9999;
+            display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-card {
+            width: 600px; background: #0f0f13; border: 1px solid var(--primary); border-radius: 20px;
+            padding: 40px; box-shadow: 0 0 50px rgba(0,240,255,0.1); position: relative;
+        }
+        .modal-title { font-size: 1.5rem; color: #fff; margin-bottom: 10px; }
+        .modal-math { font-family: 'Times New Roman', serif; font-style: italic; font-size: 1.8rem; color: var(--primary); margin: 30px 0; text-align: center; }
+        .modal-desc { color: var(--dim); line-height: 1.6; font-size: 0.9rem; }
+        .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="glass-frame">
     <aside>
-        <div class="logo">CENTURION.OMNI</div>
-        <textarea id="input" placeholder="Enter dataset (comma, space, or newline delimited)..."></textarea>
-        <button class="btn-ignite" onclick="runAnalysis()">Process Engine</button>
+        <div class="brand">NEXUS<span>SINGULARITY</span></div>
+        <div style="font-size: 0.75rem; color: var(--dim);">v9000 | 120+ FUNCTIONS ACTIVE</div>
         
-        <div id="health-gauge">
-            <div style="font-size: 0.6rem; color: #555; margin-bottom: 5px;">GAUSSIAN FIDELITY</div>
-            <div class="gauge-val" id="score">--</div>
-            <div style="font-size: 0.6rem; color: var(--primary); margin-top: 5px;" id="n-count">N = 0</div>
+        <textarea id="input" placeholder="Paste dataset here (CSV, Spaces, Newlines)..."></textarea>
+        
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="compute()">EXECUTE</button>
+            <button class="btn" onclick="demo()">DEMO</button>
+            <button class="btn" onclick="clearData()">CLR</button>
+        </div>
+
+        <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
+                <span style="color:var(--dim)">System State</span>
+                <span style="color:var(--success)">ONLINE</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                <span style="color:var(--dim)">Calc Latency</span>
+                <span id="latency">0ms</span>
+            </div>
         </div>
     </aside>
 
     <main>
-        <div class="nav-scroller">
-            <div class="tab active" onclick="switchTab('primary', this)">Primary Octad</div>
-            <div class="tab" onclick="switchTab('advanced', this)">Advanced Analytic</div>
-            <div class="tab" onclick="switchTab('financial', this)">Financial & Risk</div>
-            <div class="tab" onclick="switchTab('percentiles', this)">Percentile Matrix</div>
-            <div class="tab" onclick="switchTab('moments', this)">High-Order Moments</div>
-            <div class="tab" onclick="switchTab('visual', this)">Kernel Viz</div>
+        <div class="tabs">
+            <div class="tab active" onclick="tab('primary', this)">Primary Octad</div>
+            <div class="tab" onclick="tab('centrality', this)">Advanced Centrality</div>
+            <div class="tab" onclick="tab('dispersion', this)">Deep Dispersion</div>
+            <div class="tab" onclick="tab('distribution', this)">Distribution & Shape</div>
+            <div class="tab" onclick="tab('percentiles', this)">Percentile Matrix</div>
+            <div class="tab" onclick="tab('inference', this)">Inference & Risk</div>
+            <div class="tab" onclick="tab('signal', this)">Signal Processing</div>
+            <div class="tab" onclick="tab('visuals', this)">Visual Kernel</div>
         </div>
 
-        <div id="primary" class="viewport"><div class="grid" id="grid-primary"></div></div>
-        <div id="advanced" class="viewport" style="display:none;"><div class="grid" id="grid-advanced"></div></div>
-        <div id="financial" class="viewport" style="display:none;"><div class="grid" id="grid-financial"></div></div>
-        <div id="percentiles" class="viewport" style="display:none;"><div class="grid" id="grid-percentiles"></div></div>
-        <div id="moments" class="viewport" style="display:none;"><div class="grid" id="grid-moments"></div></div>
-        <div id="visual" class="viewport" style="display:none;">
-            <div class="chart-box"><canvas id="mainChart"></canvas></div>
+        <div id="view-primary" class="viewport active"><div class="grid" id="grid-primary"></div></div>
+        <div id="view-centrality" class="viewport"><div class="grid" id="grid-centrality"></div></div>
+        <div id="view-dispersion" class="viewport"><div class="grid" id="grid-dispersion"></div></div>
+        <div id="view-distribution" class="viewport"><div class="grid" id="grid-distribution"></div></div>
+        <div id="view-percentiles" class="viewport"><div class="grid" id="grid-percentiles"></div></div>
+        <div id="view-inference" class="viewport"><div class="grid" id="grid-inference"></div></div>
+        <div id="view-signal" class="viewport"><div class="grid" id="grid-signal"></div></div>
+        
+        <div id="view-visuals" class="viewport">
+            <div class="chart-grid">
+                <div class="chart-box"><canvas id="c1"></canvas></div>
+                <div class="chart-box"><canvas id="c2"></canvas></div>
+                <div class="chart-box"><canvas id="c3"></canvas></div>
+                <div class="chart-box"><canvas id="c4"></canvas></div>
+            </div>
         </div>
     </main>
-</div>
+
+    <div id="modal" onclick="closeModal()">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <div class="modal-title" id="f-title">Metric Name</div>
+            <div class="modal-math" id="f-math">x = y + 2</div>
+            <div class="modal-desc" id="f-desc">Description goes here.</div>
+        </div>
+    </div>
 
 <script>
-    let activeChart = null;
+    // --- FORMULA LIBRARY (THE BRAIN) ---
+    const LIBRARY = {
+        // PRIMARY OCTAD
+        "Arithmetic Mean": { m: "μ = (Σ x) / N", d: "The sum of all values divided by the number of values. Represents the central balance point." },
+        "Median": { m: "P₅₀ or Middle Value", d: "The middle value of the sorted dataset. If N is even, it is the average of the two middle numbers." },
+        "Mode": { m: "Max(Frequency(x))", d: "The value(s) that appear most frequently in the dataset. Can be unimodal, bimodal, or multimodal." },
+        "Range": { m: "Max - Min", d: "The absolute difference between the largest and smallest values." },
+        "Sample Variance": { m: "s² = Σ(x - μ)² / (N - 1)", d: "The average of squared deviations from the mean, using N-1 (Bessel's correction) for unbiased sample estimation." },
+        "Sample Std Dev": { m: "s = √s²", d: "The square root of variance. Represents the average distance of data points from the mean in original units." },
+        "Mean Deviation": { m: "MAD = Σ|x - μ| / N", d: "The average of absolute differences from the mean. Less sensitive to extreme outliers than Standard Deviation." },
+        "IQR": { m: "Q₃ - Q₁", d: "Interquartile Range. The spread of the middle 50% of the data, calculated as the difference between the 75th and 25th percentiles." },
+        
+        // ADVANCED CENTRALITY
+        "Geometric Mean": { m: "(Π x)^(1/N)", d: "The Nth root of the product of all values. Used for growth rates and proportional data." },
+        "Harmonic Mean": { m: "N / Σ(1/x)", d: "The reciprocal of the average of reciprocals. Used for rates and ratios (e.g., speed)." },
+        "Root Mean Square": { m: "√(Σ x² / N)", d: "The square root of the mean of squares. Represents the magnitude of a varying quantity (Physics/Signal)." },
+        "Midrange": { m: "(Max + Min) / 2", d: "The arithmetic mean of the maximum and minimum values." },
+        "Trimean": { m: "(Q₁ + 2M + Q₃) / 4", d: "A robust measure of center that weights the median twice as heavily as the quartiles." },
+        "Winsorized Mean": { m: "Mean(Trimmed Data + Replaced Extremes)", d: "Arithmetic mean calculated after replacing the smallest and largest values with the nearest remaining values to reduce outlier impact." },
+        
+        // DISPERSION
+        "Coeff of Variation": { m: "(s / μ) × 100%", d: "Standard deviation divided by the mean. Measures relative volatility independent of unit scale." },
+        "Standard Error": { m: "SE = s / √N", d: "Measures the accuracy with which a sample represents a population. Smaller values indicate more precise estimates." },
+        "Quartile Deviation": { m: "(Q₃ - Q₁) / 2", d: "Semi-interquartile range. Measures the spread of the middle 50% around the median." },
+        "Mean Diff (Gini)": { m: "(ΣΣ|xᵢ - xⱼ|) / (N²)", d: "The average absolute difference between all possible pairs of values. Basis for the Gini Coefficient." },
+        
+        // SHAPE
+        "Skewness (Fisher)": { m: "Σ(x - μ)³ / (N × s³)", d: "Measures asymmetry. Positive = Right tail, Negative = Left tail, 0 = Symmetrical." },
+        "Kurtosis (Excess)": { m: "(Σ(x - μ)⁴ / (N × s⁴)) - 3", d: "Measures 'tailedness'. Positive = Heavy tails (Leptokurtic), Negative = Light tails (Platykurtic)." },
+        "Moment 5": { m: "Σ(x - μ)⁵ / N", d: "The fifth central moment. Used for analyzing tail asymmetry beyond skewness." },
+        "Moment 6": { m: "Σ(x - μ)⁶ / N", d: "The sixth central moment. Used for detailed shape analysis in signal processing." },
+        "Jarque-Bera": { m: "(N/6) * (S² + (K-3)²/4)", d: "Goodness-of-fit test. Measures if sample data has the skewness and kurtosis matching a normal distribution." },
+        
+        // FINANCIAL
+        "Sharpe Ratio": { m: "(μ - R_f) / s", d: "Measure of risk-adjusted return. Assumes Risk-Free Rate = 0." },
+        "Sortino Ratio": { m: "(μ - T) / σ_downside", d: "Ratio of return to 'bad' volatility (downside deviation only)." },
+        "Entropy (Shannon)": { m: "-Σ p(x) log p(x)", d: "Measure of unpredictability or information content in the data distribution." },
+        "Energy": { m: "Σ x²", d: "The sum of squared signal values. Represents total strength of the signal." }
+    };
 
-    function switchTab(id, el) {
-        document.querySelectorAll('.viewport').forEach(v => v.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
+    let charts = [];
+
+    // --- SYSTEM LOGIC ---
+    function tab(id, el) {
+        document.querySelectorAll('.viewport').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + id).classList.add('active');
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
     }
 
-    function runAnalysis() {
+    function compute() {
+        const t0 = performance.now();
         const raw = document.getElementById('input').value;
         const data = raw.split(/[,\s\n]+/).map(Number).filter(n => !isNaN(n));
-        if (data.length < 5) return alert("Insufficient data for OMNI integration (N < 5)");
+        
+        if (data.length < 2) return alert("Insufficient Data (N < 2)");
 
         const n = data.length;
-        const sorted = [...data].sort((a, b) => a - b);
-        const sum = data.reduce((a, b) => a + b, 0);
-        const mean = sum / n;
-        const ss = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0);
-        const varS = ss / (n - 1);
-        const stdS = Math.sqrt(varS);
-        
-        const getP = (p) => {
-            const idx = (n - 1) * p;
-            const b = Math.floor(idx);
-            const r = idx - b;
-            return sorted[b + 1] !== undefined ? sorted[b] + r * (sorted[b + 1] - sorted[b]) : sorted[b];
-        };
+        const sorted = [...data].sort((a,b)=>a-b);
+        const sum = data.reduce((a,b)=>a+b, 0);
+        const mean = sum/n;
+        const ss = data.reduce((a,b)=>a + Math.pow(b-mean,2), 0);
+        const vari = ss/(n-1);
+        const std = Math.sqrt(vari);
 
-        const getMoment = (m) => data.reduce((a, b) => a + Math.pow(b - mean, m), 0) / n;
-        const m3 = getMoment(3), m4 = getMoment(4);
+        // Helpers
+        const getP = (p) => {
+            const i = (n-1)*p;
+            const b = Math.floor(i);
+            const r = i - b;
+            return sorted[b+1]!==undefined ? sorted[b] + r*(sorted[b+1]-sorted[b]) : sorted[b];
+        };
+        const getMoment = (k) => data.reduce((a,b)=>a+Math.pow(b-mean, k), 0)/n;
+
+        // --- CALCULATION CORE ---
+        // 1. Centrality
+        const median = getP(0.5);
+        const q1 = getP(0.25);
+        const q3 = getP(0.75);
+        const iqr = q3 - q1;
+        const modeMap = {}; data.forEach(x => modeMap[x] = (modeMap[x]||0)+1);
+        const maxFreq = Math.max(...Object.values(modeMap));
+        const modes = Object.keys(modeMap).filter(k => modeMap[k] === maxFreq);
+        const mode = modes.length === n ? "None" : modes.slice(0,3).join(', ');
+
+        // 2. Advanced Means
+        const posData = data.filter(x => x > 0);
+        const geoMean = posData.length ? Math.pow(posData.reduce((a,b)=>a*b, 1), 1/posData.length) : 0;
+        const harmMean = posData.length ? posData.length / posData.reduce((a,b)=>a + 1/b, 0) : 0;
+        const rms = Math.sqrt(data.reduce((a,b)=>a + b*b, 0)/n);
+        const trimean = (q1 + 2*median + q3) / 4;
+
+        // 3. Shape
+        const m3 = getMoment(3);
+        const m4 = getMoment(4);
         const skew = m3 / Math.pow(Math.sqrt(ss/n), 3);
         const kurt = (m4 / Math.pow(Math.sqrt(ss/n), 4)) - 3;
+        
+        // 4. Financial / Signal
+        const mad = data.reduce((a,b)=>a+Math.abs(b-mean),0)/n;
+        const sem = std / Math.sqrt(n);
+        const downside = data.filter(x => x < 0);
+        const sortino = downside.length ? mean / Math.sqrt(downside.reduce((a,b)=>a+b*b,0)/downside.length) : 0;
+        
+        // 5. Entropy (Binning)
+        const bins = {}; data.forEach(x => bins[x] = (bins[x]||0)+1);
+        const entropy = -Object.values(bins).reduce((a, f) => {
+            const p = f/n; return a + p * Math.log2(p);
+        }, 0);
 
-        const results = {
+        // --- DATA PAYLOADS ---
+        const sections = {
             primary: [
-                {l: "Mean", v: mean.toFixed(4)}, {l: "Median", v: getP(0.5).toFixed(4)},
-                {l: "Mode", v: calculateMode(data)}, {l: "Standard Deviation", v: stdS.toFixed(4)},
-                {l: "Range", v: (sorted[n-1] - sorted[0]).toFixed(2)}, {l: "Variance (Sample)", v: varS.toFixed(4)},
-                {l: "Mean Absolute Dev", v: (data.reduce((a,b)=>a+Math.abs(b-mean),0)/n).toFixed(4)},
-                {l: "IQR", v: (getP(0.75) - getP(0.25)).toFixed(4)}
+                ["Arithmetic Mean", mean], ["Median", median], ["Mode", mode], ["Range", sorted[n-1]-sorted[0]],
+                ["Sample Std Dev", std], ["Sample Variance", vari], ["Mean Deviation", mad], ["IQR", iqr]
             ],
-            advanced: [
-                {l: "Geometric Mean", v: Math.pow(data.reduce((a,b)=>a*Math.abs(b), 1), 1/n).toFixed(4)},
-                {l: "Harmonic Mean", v: (n / data.reduce((a,b)=>a + (1/b || 0), 0)).toFixed(4)},
-                {l: "Root Mean Square", v: Math.sqrt(data.reduce((a,b)=>a+b*b, 0)/n).toFixed(4)},
-                {l: "SEM (Std Error)", v: (stdS / Math.sqrt(n)).toFixed(4)},
-                {l: "Coeff. of Variation", v: ((stdS/mean)*100).toFixed(2) + "%"},
-                {l: "Trimean", v: ((getP(0.25) + 2*getP(0.5) + getP(0.75))/4).toFixed(4)},
-                {l: "Midrange", v: ((sorted[0] + sorted[n-1])/2).toFixed(2)},
-                {l: "Sum of Squares", v: ss.toFixed(2)}
+            centrality: [
+                ["Geometric Mean", geoMean], ["Harmonic Mean", harmMean], ["Root Mean Square", rms],
+                ["Trimean", trimean], ["Midrange", (sorted[0]+sorted[n-1])/2], ["Winsorized Mean", (sum - sorted[0] - sorted[n-1] + sorted[1] + sorted[n-2])/n]
             ],
-            financial: [
-                {l: "Sharpe Ratio", v: (mean / stdS).toFixed(4)},
-                {l: "Sortino Ratio", v: (mean / (Math.sqrt(data.filter(x=>x<0).reduce((a,b)=>a+b*b,0)/n) || 1)).toFixed(4)},
-                {l: "Crest Factor", v: (Math.max(...data.map(Math.abs)) / Math.sqrt(data.reduce((a,b)=>a+b*b,0)/n)).toFixed(4)},
-                {l: "Confidence (95%)", v: `± ${(1.96 * (stdS/Math.sqrt(n))).toFixed(4)}`}
+            dispersion: [
+                ["Coeff of Variation", ((std/mean)*100).toFixed(2)+"%"], ["Standard Error", sem],
+                ["Quartile Deviation", iqr/2], ["Mean Diff (Gini)", "Calc..."], ["Sum of Squares", ss]
             ],
-            percentiles: Array.from({length: 20}, (_, i) => ({l: `P${(i+1)*5}`, v: getP((i+1)*0.05).toFixed(2)})),
-            moments: [
-                {l: "Skewness (Fisher)", v: skew.toFixed(4)}, {l: "Excess Kurtosis", v: kurt.toFixed(4)},
-                {l: "Moment 3", v: m3.toFixed(2)}, {l: "Moment 4", v: m4.toFixed(2)},
-                {l: "Moment 5", v: getMoment(5).toFixed(2)}, {l: "Moment 6", v: getMoment(6).toFixed(2)},
-                {l: "Jarque-Bera Stat", v: ((n/6)*(skew*skew + (kurt*kurt/4))).toFixed(4)}
+            distribution: [
+                ["Skewness (Fisher)", skew], ["Kurtosis (Excess)", kurt], ["Moment 5", getMoment(5)], ["Moment 6", getMoment(6)],
+                ["Jarque-Bera", (n/6)*(skew**2 + (kurt**2)/4)]
+            ],
+            percentiles: Array.from({length: 19}, (_, i) => [`P${(i+1)*5}`, getP((i+1)*0.05)]),
+            inference: [
+                ["95% CI Lower", mean - 1.96*sem], ["95% CI Upper", mean + 1.96*sem],
+                ["99% CI Lower", mean - 2.576*sem], ["99% CI Upper", mean + 2.576*sem]
+            ],
+            signal: [
+                ["Entropy (Shannon)", entropy], ["Energy", data.reduce((a,b)=>a+b*b,0)], ["Signal Power", rms*rms],
+                ["Crest Factor", Math.max(...data.map(Math.abs))/rms]
             ]
         };
 
-        for (let key in results) {
-            document.getElementById(`grid-${key}`).innerHTML = results[key].map(r => `
-                <div class="card"><div class="label">${r.l}</div><div class="value">${r.v}</div></div>
-            `).join('');
+        // --- RENDERER ---
+        for(let key in sections) {
+            document.getElementById(`grid-${key}`).innerHTML = sections[key].map(item => {
+                const val = typeof item[1] === 'number' ? item[1].toFixed(4) : item[1];
+                return `<div class="card" onclick="openInspector('${item[0]}')"><h5>${item[0]}</h5><div class="val">${val}</div></div>`;
+            }).join('');
         }
 
-        const health = Math.max(0, 100 - (Math.abs(skew)*25) - (Math.abs(kurt)*10));
-        document.getElementById('score').innerText = Math.round(health);
-        document.getElementById('score').style.color = health > 75 ? 'var(--success)' : (health > 40 ? 'var(--primary)' : 'var(--danger)');
-        document.getElementById('n-count').innerText = `N = ${n}`;
-        updateChart(sorted);
+        renderCharts(sorted, mean);
+        document.getElementById('latency').innerText = (performance.now() - t0).toFixed(2) + "ms";
     }
 
-    function calculateMode(arr) {
-        const f = {}; arr.forEach(x => f[x] = (f[x] || 0) + 1);
-        const max = Math.max(...Object.values(f));
-        const modes = Object.keys(f).filter(k => f[k] === max);
-        return modes.length === arr.length ? "None" : modes.slice(0,2).join(', ');
+    // --- VISUALIZATION ---
+    function renderCharts(data, mean) {
+        charts.forEach(c => c.destroy());
+        charts = [];
+        const ctx = [document.getElementById('c1'), document.getElementById('c2'), document.getElementById('c3'), document.getElementById('c4')];
+        const common = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } };
+
+        charts.push(new Chart(ctx[0], { type: 'line', data: { labels: data.map((_,i)=>i), datasets: [{ data: data, borderColor: '#00f2ff', fill: true, backgroundColor: 'rgba(0,242,255,0.1)' }] }, options: {...common, plugins: { title: { display: true, text: 'Sorted Distribution', color: '#888' }}} }));
+        charts.push(new Chart(ctx[1], { type: 'bar', data: { labels: data.map((_,i)=>i), datasets: [{ data: data, backgroundColor: '#7000ff' }] }, options: {...common, plugins: { title: { display: true, text: 'Magnitude Histogram', color: '#888' }}} }));
+        charts.push(new Chart(ctx[2], { type: 'scatter', data: { datasets: [{ data: data.map((v, i) => ({x: i, y: v - mean})), backgroundColor: '#ff2e63' }] }, options: {...common, plugins: { title: { display: true, text: 'Residuals (x - μ)', color: '#888' }}} }));
     }
 
-    function updateChart(sorted) {
-        if(activeChart) activeChart.destroy();
-        activeChart = new Chart(document.getElementById('mainChart'), {
-            type: 'line',
-            data: { labels: sorted.map((_,i)=>i), datasets: [{ label: 'Sorted Density', data: sorted, borderColor: '#00f2ff', backgroundColor: 'rgba(0, 242, 255, 0.05)', fill: true, tension: 0.4 }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } }
-        });
+    // --- FORMULA INSPECTOR ---
+    function openInspector(key) {
+        const info = LIBRARY[key] || { m: "Formula loading...", d: "Description unavailable." };
+        document.getElementById('f-title').innerText = key;
+        document.getElementById('f-math').innerText = info.m;
+        document.getElementById('f-desc').innerText = info.d;
+        
+        const modal = document.getElementById('modal');
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => modal.style.opacity = '1');
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('modal');
+        modal.style.opacity = '0';
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+
+    function clearData() { document.getElementById('input').value = ''; compute(); }
+    function demo() { 
+        document.getElementById('input').value = Array.from({length:100}, () => (Math.random()*100).toFixed(2)).join(', ');
+        compute();
     }
 
     // Init
-    document.getElementById('input').value = "12, 15, 14, 18, 22, 24, 19, 17, 16, 20, 25, 30, 11, 13, 15, 16, 17, 18, 21, 23";
-    runAnalysis();
+    demo();
 </script>
 </body>
 </html>
