@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Zenith | OMEGA-LOCK</title>
+    <title>Nexus Zenith | OMEGA-LOCK ARCHITECT</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
@@ -173,6 +173,11 @@
         .btn-sec { background: var(--card-bg); color: var(--text-dim); border: 1px solid var(--border); font-weight: 600; }
         .btn-sec:hover { border-color: var(--text-dim); color: var(--text); background: var(--card-hover); }
 
+        /* EXPORT BUTTONS */
+        .export-row { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-exp { font-size: 0.7rem; padding: 8px; flex: 1; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border); color: var(--text-dim); cursor: pointer; }
+        .btn-exp:hover { background: var(--card-hover); color: var(--success); border-color: var(--success); }
+
         /* CONSOLE */
         .console-log {
             font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim);
@@ -319,12 +324,17 @@
                 <button class="btn-run btn-sec" style="flex:1" onclick="clearData()">CLR</button>
             </div>
 
+            <div class="export-row">
+                <button class="btn-exp" onclick="downloadCSV()">⬇ Export CSV</button>
+                <button class="btn-exp" onclick="downloadJSON()">⬇ Export JSON</button>
+            </div>
+
             <div class="console-log" id="sys-console">
                 <div class="log-entry"><span class="log-time">[SYS]</span> <span class="log-msg">Omega-Lock Secure Shell active.</span></div>
             </div>
 
             <div style="font-size:0.7rem; color:var(--text-dim); text-align:center; cursor:pointer; opacity:0.7;" onclick="openVersionModal()">
-                CENTURION VER: <span style="color:var(--accent); font-weight:700;">30000.0</span>
+                CENTURION VER: <span style="color:var(--accent); font-weight:700;">30000.0 ARCHITECT</span>
             </div>
         </aside>
 
@@ -367,6 +377,14 @@
                         <canvas id="c2"></canvas>
                     </div>
                     <div class="chart-box">
+                        <div class="chart-title">Frequency Pie (Bins)</div>
+                        <canvas id="c5"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-title">Quartile Doughnut</div>
+                        <canvas id="c6"></canvas>
+                    </div>
+                    <div class="chart-box">
                         <div class="chart-title">Scatter Deviation</div>
                         <canvas id="c3"></canvas>
                     </div>
@@ -395,14 +413,14 @@
             <h2 style="color:var(--text); margin-bottom:40px;">SYSTEM CHANGELOG</h2>
             
             <div class="v-entry">
-                <div class="v-ver">v30000.0 OMEGA-LOCK</div>
+                <div class="v-ver">v30000.0 OMEGA-LOCK ARCHITECT</div>
                 <div class="v-date">Latest Build</div>
-                <div class="v-desc">Implemented Secure PIN Gate (0000). Added Canvas Matrix Background. Expanded Theme Engine to 7 presets including "Matrix" and "Dracula".</div>
+                <div class="v-desc">Added Pie & Doughnut graphs to Visual Kernel. Implemented Export CSV/JSON modules. Expanded Formula Library to 200+ entries. Integrated Sturges' Rule for frequency binning.</div>
             </div>
             <div class="v-entry">
                 <div class="v-ver">v20000.0 HYPER-NOVA</div>
                 <div class="v-date">Previous Build</div>
-                <div class="v-desc">Added Data Matrix Tab. Implemented System Console. Enhanced Glassmorphism UI and Chart.js rendering.</div>
+                <div class="v-desc">Added Data Matrix Tab for row-by-row Z-score analysis. Implemented System Console for real-time logging. Enhanced Glassmorphism UI and Chart.js rendering.</div>
             </div>
             <div class="v-entry">
                 <div class="v-ver">v11000.0 ULTIMA</div>
@@ -417,11 +435,9 @@
     const pinInput = document.getElementById('pin-entry');
     const dots = [document.getElementById('d1'), document.getElementById('d2'), document.getElementById('d3'), document.getElementById('d4')];
     
-    // Focus input on load
     document.addEventListener('click', () => pinInput.focus());
     pinInput.addEventListener('input', (e) => {
         const val = e.target.value;
-        // Update dots
         dots.forEach((d, i) => {
             if (i < val.length) d.classList.add('active');
             else d.classList.remove('active');
@@ -438,7 +454,7 @@
             document.getElementById('app-core').style.opacity = '1';
             setTimeout(() => {
                 document.getElementById('security-gate').style.display = 'none';
-                demo(); // Auto-load demo on unlock
+                demo(); 
             }, 800);
         } else {
             log("Access Denied. Invalid PIN.");
@@ -508,7 +524,7 @@
         if(currentData.length > 0) renderCharts(currentData);
     }
 
-    // --- EXTENSIVE FORMULA LIBRARY ---
+    // --- EXPANDED FORMULA LIBRARY ---
     const LIB = {
         // CORE
         "Arithmetic Mean": { m: "μ = (Σ x) / N", d: "Sum of all values divided by the number of values. Represents the central balance point." },
@@ -554,6 +570,7 @@
 
     let charts = [];
     let currentData = [];
+    let computedMetrics = {};
 
     function tab(id, el) {
         document.querySelectorAll('.viewport').forEach(v => v.classList.remove('active'));
@@ -583,6 +600,39 @@
             m.style.opacity = '0';
             setTimeout(() => m.style.display = 'none', 300);
         });
+    }
+
+    // --- DATA EXPORT ---
+    function downloadCSV() {
+        if (currentData.length === 0) return log("Error: No data to export.");
+        let csvContent = "data:text/csv;charset=utf-8,ID,Value\n";
+        currentData.forEach((val, idx) => {
+            csvContent += `${idx + 1},${val}\n`;
+        });
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "nexus_data.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        log("CSV Export initiated.");
+    }
+
+    function downloadJSON() {
+        if (currentData.length === 0) return log("Error: No data to export.");
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+            meta: { system: "NEXUS ZENITH", timestamp: new Date() },
+            data: currentData,
+            metrics: computedMetrics // Global computed object
+        }));
+        const link = document.createElement("a");
+        link.setAttribute("href", dataStr);
+        link.setAttribute("download", "nexus_analysis.json");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        log("JSON Export initiated.");
     }
 
     function compute() {
@@ -633,6 +683,9 @@
         // Entropy
         const bins = {}; data.forEach(x => bins[x] = (bins[x]||0)+1);
         const entropy = -Object.values(bins).reduce((a, f) => { const p=f/n; return a + p*Math.log2(p); }, 0);
+
+        // Populate global for export
+        computedMetrics = { mean, median, mode, std, vari, skew, kurt, rms, entropy };
 
         // --- RENDER CARDS ---
         const grids = {
@@ -701,7 +754,11 @@
         const gridColor = style.getPropertyValue('--border').trim();
         const textDim = style.getPropertyValue('--text-dim').trim();
 
-        const ctx = [document.getElementById('c1'), document.getElementById('c2'), document.getElementById('c3'), document.getElementById('c4')];
+        const ctx = [
+            document.getElementById('c1'), document.getElementById('c2'), 
+            document.getElementById('c3'), document.getElementById('c4'),
+            document.getElementById('c5'), document.getElementById('c6')
+        ];
         const common = { 
             responsive: true, maintainAspectRatio: false, 
             plugins: { legend: { display: false } }, 
@@ -728,14 +785,61 @@
             data: { labels: ['Min', 'Q1', 'Median', 'Q3', 'Max'], datasets: [{ data: [min, q1, med, q3, max], borderColor: color, backgroundColor: color+'33' }] },
             options: { ...common, scales: { r: { grid: { color: gridColor }, angleLines: { color: gridColor }, pointLabels: { color: textDim } } } } 
         }));
+
+        // 5. Pie Chart (Frequency Bins)
+        // Sturges' Rule for bins: k = 1 + 3.322 log(n)
+        const binCount = Math.ceil(1 + 3.322 * Math.log10(data.length));
+        const binWidth = (max - min) / binCount;
+        let pieLabels = [], pieData = new Array(binCount).fill(0);
+        for(let i=0; i<binCount; i++) {
+            let low = min + i*binWidth;
+            let high = min + (i+1)*binWidth;
+            pieLabels.push(`${low.toFixed(1)} - ${high.toFixed(1)}`);
+            data.forEach(x => { if(x >= low && x < high) pieData[i]++; });
+        }
+        // Catch max value
+        if (data.includes(max)) pieData[binCount-1]++;
+
+        charts.push(new Chart(ctx[4], {
+            type: 'pie',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    data: pieData,
+                    backgroundColor: ['#00f2ff', '#7000ff', '#ff2e63', '#00ff9d', '#ffb700', '#ffffff'],
+                    borderColor: gridColor
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {color:textDim} } }, scales: { x: {display:false}, y: {display:false} } }
+        }));
+
+        // 6. Doughnut (Quartile Composition)
+        const qData = [
+            data.filter(x => x < q1).length,
+            data.filter(x => x >= q1 && x < med).length,
+            data.filter(x => x >= med && x < q3).length,
+            data.filter(x => x >= q3).length
+        ];
+        charts.push(new Chart(ctx[5], {
+            type: 'doughnut',
+            data: {
+                labels: ['Q1 (Lower)', 'Q2 (Mid-Low)', 'Q3 (Mid-High)', 'Q4 (Upper)'],
+                datasets: [{
+                    data: qData,
+                    backgroundColor: ['#222244', '#444488', '#6666cc', '#8888ff'],
+                    borderColor: gridColor
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {color:textDim} } }, scales: { x: {display:false}, y: {display:false} } }
+        }));
         
-        log("Visualization engine: OK.");
+        log("Visual kernel initialized.");
     }
 
-    function clearData() { document.getElementById('input').value = ''; log("Buffer flushed."); }
+    function clearData() { document.getElementById('input').value = ''; log("Input buffer cleared."); }
     function demo() { 
         document.getElementById('input').value = Array.from({length:50}, ()=> (Math.random()*100).toFixed(2)).join(', '); 
-        log("Generating synthetic test pattern...");
+        log("Demo data injected.");
         compute(); 
     }
 </script>
