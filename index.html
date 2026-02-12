@@ -3,214 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Zenith | CENTURION OMNI-MAX</title>
+    <title>CENTURION OMNI-LAB | Nexus Zenith</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #08080c; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1);
+            --bg: #030305; --card: rgba(20, 20, 30, 0.6); --border: rgba(255, 255, 255, 0.08);
             --primary: #00f2ff; --accent: #7000ff; --success: #00ff9d; --danger: #ff2e63;
-            --radius-lg: 24px; --radius-md: 12px; --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --radius: 20px; --font-mono: 'JetBrains Mono', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: #e0e0e0; font-family: 'Inter', system-ui, sans-serif; height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
 
-        /* --- THE GLASS FRAME --- */
-        #container {
-            width: 95vw; height: 90vh; background: var(--glass); backdrop-filter: blur(20px);
-            border: 1px solid var(--border); border-radius: var(--radius-lg);
-            display: grid; grid-template-columns: 320px 1fr; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+        #glass-frame {
+            display: grid; grid-template-columns: 360px 1fr; height: 100vh;
+            background: radial-gradient(circle at top left, #10101a, #030305);
         }
 
-        /* --- SIDEBAR --- */
-        aside { background: rgba(0, 0, 0, 0.2); border-right: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; gap: 20px; }
-        h1 { font-size: 1.2rem; font-weight: 900; letter-spacing: 2px; color: var(--primary); text-transform: uppercase; margin-bottom: 10px; }
+        /* --- SIDEBAR & INPUT --- */
+        aside {
+            background: rgba(0, 0, 0, 0.4); border-right: 1px solid var(--border);
+            padding: 40px 30px; display: flex; flex-direction: column; gap: 25px;
+        }
+        .logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
         textarea {
-            width: 100%; height: 200px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); 
-            border-radius: var(--radius-md); color: var(--primary); padding: 15px; font-family: var(--font-mono); font-size: 0.8rem; resize: none;
+            width: 100%; height: 280px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 20px; color: var(--primary); font-family: var(--font-mono);
+            font-size: 0.85rem; line-height: 1.6; transition: 0.3s; resize: none;
         }
-        .btn-run {
-            background: linear-gradient(135deg, var(--primary), var(--accent)); color: #000;
-            padding: 16px; font-weight: 800; border: none; border-radius: var(--radius-md); cursor: pointer;
-            transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
-        }
-        .btn-run:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3); }
+        textarea:focus { border-color: var(--primary); background: rgba(255, 255, 255, 0.05); }
 
-        /* --- MAIN CONTENT --- */
-        main { display: flex; flex-direction: column; overflow: hidden; }
-        .tabs { display: flex; padding: 10px 20px; gap: 10px; background: rgba(0,0,0,0.1); }
-        .tab-btn {
-            padding: 12px 20px; background: transparent; border: none; color: #666; cursor: pointer;
-            border-radius: 10px; font-weight: 600; font-size: 0.8rem; transition: 0.2s;
+        .btn-ignite {
+            background: #fff; color: #000; border: none; padding: 18px; border-radius: 50px;
+            font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .tab-btn.active { color: var(--primary); background: var(--glass); }
+        .btn-ignite:hover { transform: scale(1.02); background: var(--primary); }
 
-        .content-area { flex: 1; overflow-y: auto; padding: 30px; }
-        .grid-100 { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .stat-card {
-            background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 18px;
-            border-radius: var(--radius-md); transition: 0.3s; position: relative; overflow: hidden;
+        /* --- MAIN VIEW --- */
+        main { display: flex; flex-direction: column; overflow: hidden; padding: 20px; }
+        .nav-scroller { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
+        .nav-scroller::-webkit-scrollbar { display: none; }
+        .tab {
+            padding: 10px 24px; background: var(--card); border: 1px solid var(--border);
+            border-radius: 50px; font-size: 0.75rem; font-weight: 600; cursor: pointer;
+            white-space: nowrap; transition: 0.2s; color: #666;
         }
-        .stat-card:hover { background: rgba(255,255,255,0.05); border-color: var(--primary); }
-        .stat-card h5 { font-size: 0.6rem; color: #777; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .stat-card .val { font-size: 1.1rem; font-weight: 700; font-family: var(--font-mono); color: #fff; }
+        .tab.active { background: #fff; color: #000; border-color: #fff; }
+
+        .viewport { flex: 1; overflow-y: auto; padding: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
         
-        /* Shimmer effect for "Active" feel */
-        .stat-card::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent); transition: 0.5s; }
-        .stat-card:hover::after { left: 100%; }
+        .card {
+            background: var(--card); border: 1px solid var(--border); padding: 25px;
+            border-radius: var(--radius); transition: 0.3s; backdrop-filter: blur(10px);
+        }
+        .card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .card .label { font-size: 0.65rem; color: #777; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+        .card .value { font-size: 1.4rem; font-weight: 700; font-family: var(--font-mono); color: #fff; }
 
-        .chart-box { height: 350px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); padding: 20px; border: 1px solid var(--border); }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        .chart-box { background: var(--card); border-radius: var(--radius); padding: 30px; border: 1px solid var(--border); height: 450px; }
+
+        #health-gauge { margin-top: auto; padding: 20px; border-radius: var(--radius); background: rgba(255,255,255,0.02); text-align: center; }
+        .gauge-val { font-size: 2.5rem; font-weight: 900; font-family: var(--font-mono); }
     </style>
 </head>
 <body>
 
-    <div id="container">
-        <aside>
-            <h1>Centurion<span>100+</span></h1>
-            <p style="font-size: 0.7rem; color: #555;">v110.0 Omni-Engine Active</p>
-            <textarea id="dataInput" placeholder="Separated by commas..."></textarea>
-            <button class="btn-run" onclick="runAnalysis()">Ignite Analysis</button>
-            
-            <div id="health-score" style="margin-top: auto; text-align: center;">
-                <div style="font-size: 0.6rem; color: #777; margin-bottom: 5px;">DATA HEALTH SCORE</div>
-                <div id="score-val" style="font-size: 3rem; font-weight: 900; color: var(--success);">--</div>
-            </div>
-        </aside>
+<div id="glass-frame">
+    <aside>
+        <div class="logo">CENTURION.OMNI</div>
+        <textarea id="input" placeholder="Enter dataset (comma, space, or newline delimited)..."></textarea>
+        <button class="btn-ignite" onclick="runAnalysis()">Process Engine</button>
+        
+        <div id="health-gauge">
+            <div style="font-size: 0.6rem; color: #555; margin-bottom: 5px;">GAUSSIAN FIDELITY</div>
+            <div class="gauge-val" id="score">--</div>
+            <div style="font-size: 0.6rem; color: var(--primary); margin-top: 5px;" id="n-count">N = 0</div>
+        </div>
+    </aside>
 
-        <main>
-            <nav class="tabs">
-                <button class="tab-btn active" onclick="showSection('desc')">Primary & Descriptive</button>
-                <button class="tab-btn" onclick="showSection('moments')">Moments & Shape</button>
-                <button class="tab-btn" onclick="showSection('risk')">Financial & Risk</button>
-                <button class="tab-btn" onclick="showSection('percent')">Percentiles (1-99)</button>
-                <button class="tab-btn" onclick="showSection('meta')">Metadata & Matrix</button>
-                <button class="tab-btn" onclick="showSection('visual')">Visualization</button>
-            </nav>
+    <main>
+        <div class="nav-scroller">
+            <div class="tab active" onclick="switchTab('primary', this)">Primary Octad</div>
+            <div class="tab" onclick="switchTab('advanced', this)">Advanced Analytic</div>
+            <div class="tab" onclick="switchTab('financial', this)">Financial & Risk</div>
+            <div class="tab" onclick="switchTab('percentiles', this)">Percentile Matrix</div>
+            <div class="tab" onclick="switchTab('moments', this)">High-Order Moments</div>
+            <div class="tab" onclick="switchTab('visual', this)">Kernel Viz</div>
+        </div>
 
-            <div id="sec-desc" class="content-area active">
-                <h2 style="margin-bottom: 20px; font-size: 0.9rem; color: #555;">CORE STATISTICAL PROFILE</h2>
-                <div class="grid-100" id="grid-desc"></div>
-            </div>
-            
-            <div id="sec-moments" class="content-area" style="display:none;"><div class="grid-100" id="grid-moments"></div></div>
-            <div id="sec-risk" class="content-area" style="display:none;"><div class="grid-100" id="grid-risk"></div></div>
-            <div id="sec-percent" class="content-area" style="display:none;"><div class="grid-100" id="grid-percent"></div></div>
-            <div id="sec-meta" class="content-area" style="display:none;"><div class="grid-100" id="grid-meta"></div></div>
-            <div id="sec-visual" class="content-area" style="display:none;">
-                <div class="chart-box"><canvas id="mainChart"></canvas></div>
-            </div>
-        </main>
-    </div>
+        <div id="primary" class="viewport"><div class="grid" id="grid-primary"></div></div>
+        <div id="advanced" class="viewport" style="display:none;"><div class="grid" id="grid-advanced"></div></div>
+        <div id="financial" class="viewport" style="display:none;"><div class="grid" id="grid-financial"></div></div>
+        <div id="percentiles" class="viewport" style="display:none;"><div class="grid" id="grid-percentiles"></div></div>
+        <div id="moments" class="viewport" style="display:none;"><div class="grid" id="grid-moments"></div></div>
+        <div id="visual" class="viewport" style="display:none;">
+            <div class="chart-box"><canvas id="mainChart"></canvas></div>
+        </div>
+    </main>
+</div>
 
 <script>
-    let chart = null;
+    let activeChart = null;
 
-    function showSection(id) {
-        document.querySelectorAll('.content-area').forEach(c => c.style.display = 'none');
-        document.getElementById(`sec-${id}`).style.display = 'block';
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
+    function switchTab(id, el) {
+        document.querySelectorAll('.viewport').forEach(v => v.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
     }
 
     function runAnalysis() {
-        const raw = document.getElementById('dataInput').value;
+        const raw = document.getElementById('input').value;
         const data = raw.split(/[,\s\n]+/).map(Number).filter(n => !isNaN(n));
-        if (data.length < 10) return alert("Dataset too small for 100+ functions. Add more points.");
+        if (data.length < 5) return alert("Insufficient data for OMNI integration (N < 5)");
 
         const n = data.length;
-        const sorted = [...data].sort((a,b)=>a-b);
-        const sum = data.reduce((a,b)=>a+b, 0);
-        const mean = sum/n;
-        const sumSq = data.reduce((a,b)=>a + b*b, 0);
-        const ss = data.reduce((a,b)=>a + Math.pow(b-mean,2), 0);
-        
-        // 1-20: PRIMARY & CENTRALITY
-        const mid = Math.floor(n/2);
-        const median = n%2!==0 ? sorted[mid] : (sorted[mid-1]+sorted[mid])/2;
-        const varS = ss/(n-1);
+        const sorted = [...data].sort((a, b) => a - b);
+        const sum = data.reduce((a, b) => a + b, 0);
+        const mean = sum / n;
+        const ss = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0);
+        const varS = ss / (n - 1);
         const stdS = Math.sqrt(varS);
-        const iqr = getQ(sorted, 0.75) - getQ(sorted, 0.25);
-        const range = sorted[n-1] - sorted[0];
+        
+        const getP = (p) => {
+            const idx = (n - 1) * p;
+            const b = Math.floor(idx);
+            const r = idx - b;
+            return sorted[b + 1] !== undefined ? sorted[b] + r * (sorted[b + 1] - sorted[b]) : sorted[b];
+        };
 
-        // 21-40: MOMENTS (1st - 6th)
-        const getMoment = (m) => data.reduce((a,b) => a + Math.pow(b-mean, m), 0) / n;
-        const m3 = getMoment(3), m4 = getMoment(4), m5 = getMoment(5), m6 = getMoment(6);
+        const getMoment = (m) => data.reduce((a, b) => a + Math.pow(b - mean, m), 0) / n;
+        const m3 = getMoment(3), m4 = getMoment(4);
         const skew = m3 / Math.pow(Math.sqrt(ss/n), 3);
         const kurt = (m4 / Math.pow(Math.sqrt(ss/n), 4)) - 3;
 
-        // 41-60: FINANCIAL & SIGNAL
-        const rms = Math.sqrt(sumSq/n);
-        const sharpe = (mean / stdS) * Math.sqrt(252); // Adj for 'trading' days
-        const downside = data.filter(x => x < 0);
-        const sortino = downside.length ? (mean / (Math.sqrt(downside.reduce((a,b)=>a+b*b,0)/n))) : "Infinity";
-
-        // MAPPING 100 FUNCTIONS
-        const metrics = {
-            desc: [
-                {l: "Mean", v: mean.toFixed(4)}, {l: "Median", v: median}, {l: "Range", v: range},
-                {l: "Sample StdDev", v: stdS.toFixed(4)}, {l: "IQR", v: iqr.toFixed(4)}, {l: "Variance", v: varS.toFixed(4)},
-                {l: "Min", v: sorted[0]}, {l: "Max", v: sorted[n-1]}, {l: "Count (N)", v: n},
-                {l: "Sum", v: sum.toFixed(2)}, {l: "Harmonic Mean", v: (n / data.reduce((a,b)=>a+1/b, 0)).toFixed(4)},
-                {l: "Geometric Mean", v: Math.pow(data.reduce((a,b)=>a*b, 1), 1/n).toFixed(4)},
-                {l: "MAD", v: (data.reduce((a,b)=>a+Math.abs(b-mean),0)/n).toFixed(4)},
-                {l: "SEM", v: (stdS/Math.sqrt(n)).toFixed(4)}, {l: "Coeff. Variation", v: ((stdS/mean)*100).toFixed(2)+"%"},
-                {l: "Midrange", v: ((sorted[0]+sorted[n-1])/2).toFixed(2)}, {l: "Trimean", v: "0.00"},
-                {l: "Root Mean Sq", v: rms.toFixed(4)}, {l: "Sum of Squares", v: ss.toFixed(2)}, {l: "Peak-to-Peak", v: range}
+        const results = {
+            primary: [
+                {l: "Mean", v: mean.toFixed(4)}, {l: "Median", v: getP(0.5).toFixed(4)},
+                {l: "Mode", v: calculateMode(data)}, {l: "Standard Deviation", v: stdS.toFixed(4)},
+                {l: "Range", v: (sorted[n-1] - sorted[0]).toFixed(2)}, {l: "Variance (Sample)", v: varS.toFixed(4)},
+                {l: "Mean Absolute Dev", v: (data.reduce((a,b)=>a+Math.abs(b-mean),0)/n).toFixed(4)},
+                {l: "IQR", v: (getP(0.75) - getP(0.25)).toFixed(4)}
             ],
+            advanced: [
+                {l: "Geometric Mean", v: Math.pow(data.reduce((a,b)=>a*Math.abs(b), 1), 1/n).toFixed(4)},
+                {l: "Harmonic Mean", v: (n / data.reduce((a,b)=>a + (1/b || 0), 0)).toFixed(4)},
+                {l: "Root Mean Square", v: Math.sqrt(data.reduce((a,b)=>a+b*b, 0)/n).toFixed(4)},
+                {l: "SEM (Std Error)", v: (stdS / Math.sqrt(n)).toFixed(4)},
+                {l: "Coeff. of Variation", v: ((stdS/mean)*100).toFixed(2) + "%"},
+                {l: "Trimean", v: ((getP(0.25) + 2*getP(0.5) + getP(0.75))/4).toFixed(4)},
+                {l: "Midrange", v: ((sorted[0] + sorted[n-1])/2).toFixed(2)},
+                {l: "Sum of Squares", v: ss.toFixed(2)}
+            ],
+            financial: [
+                {l: "Sharpe Ratio", v: (mean / stdS).toFixed(4)},
+                {l: "Sortino Ratio", v: (mean / (Math.sqrt(data.filter(x=>x<0).reduce((a,b)=>a+b*b,0)/n) || 1)).toFixed(4)},
+                {l: "Crest Factor", v: (Math.max(...data.map(Math.abs)) / Math.sqrt(data.reduce((a,b)=>a+b*b,0)/n)).toFixed(4)},
+                {l: "Confidence (95%)", v: `± ${(1.96 * (stdS/Math.sqrt(n))).toFixed(4)}`}
+            ],
+            percentiles: Array.from({length: 20}, (_, i) => ({l: `P${(i+1)*5}`, v: getP((i+1)*0.05).toFixed(2)})),
             moments: [
-                {l: "Skewness", v: skew.toFixed(4)}, {l: "Excess Kurtosis", v: kurt.toFixed(4)},
-                {l: "1st Moment", v: "0.00"}, {l: "2nd Moment", v: (ss/n).toFixed(2)},
-                {l: "3rd Moment", v: m3.toFixed(2)}, {l: "4th Moment", v: m4.toFixed(2)},
-                {l: "5th Moment", v: m5.toFixed(2)}, {l: "6th Moment", v: m6.toFixed(2)},
-                {l: "Jarque-Bera Stat", v: ((n/6)*(skew*skew + (kurt*kurt/4))).toFixed(4)},
-                {l: "Bera-Jarque P", v: (Math.exp(-((n/6)*(skew*skew + (kurt*kurt/4)))/2)).toFixed(4)}
-            ],
-            percent: Array.from({length: 20}, (_, i) => ({l: `P${(i+1)*5}`, v: getQ(sorted, (i+1)*0.05).toFixed(2)})),
-            risk: [
-                {l: "Sharpe Ratio (Adj)", v: sharpe.toFixed(4)}, {l: "Sortino Ratio", v: sortino},
-                {l: "Crest Factor", v: (sorted[n-1]/rms).toFixed(4)}, {l: "Gain/Loss Ratio", v: (data.filter(x=>x>0).length / (data.filter(x=>x<0).length || 1)).toFixed(2)}
-            ],
-            meta: Array.from({length: 40}, (_, i) => ({l: `Metric Index #${i+60}`, v: (Math.random()*100).toFixed(2)}))
+                {l: "Skewness (Fisher)", v: skew.toFixed(4)}, {l: "Excess Kurtosis", v: kurt.toFixed(4)},
+                {l: "Moment 3", v: m3.toFixed(2)}, {l: "Moment 4", v: m4.toFixed(2)},
+                {l: "Moment 5", v: getMoment(5).toFixed(2)}, {l: "Moment 6", v: getMoment(6).toFixed(2)},
+                {l: "Jarque-Bera Stat", v: ((n/6)*(skew*skew + (kurt*kurt/4))).toFixed(4)}
+            ]
         };
 
-        // Populate grids
-        for(let key in metrics) {
-            const grid = document.getElementById(`grid-${key}`);
-            if(grid) grid.innerHTML = metrics[key].map(m => `
-                <div class="stat-card"><h5>${m.l}</h5><div class="val">${m.v}</div></div>
+        for (let key in results) {
+            document.getElementById(`grid-${key}`).innerHTML = results[key].map(r => `
+                <div class="card"><div class="label">${r.l}</div><div class="value">${r.v}</div></div>
             `).join('');
         }
 
-        // Score calc
-        const score = Math.max(0, 100 - (Math.abs(skew)*20) - (Math.abs(kurt)*10));
-        document.getElementById('score-val').innerText = Math.round(score);
-        document.getElementById('score-val').style.color = score > 70 ? 'var(--success)' : (score > 40 ? 'var(--warning)' : 'var(--danger)');
-
+        const health = Math.max(0, 100 - (Math.abs(skew)*25) - (Math.abs(kurt)*10));
+        document.getElementById('score').innerText = Math.round(health);
+        document.getElementById('score').style.color = health > 75 ? 'var(--success)' : (health > 40 ? 'var(--primary)' : 'var(--danger)');
+        document.getElementById('n-count').innerText = `N = ${n}`;
         updateChart(sorted);
     }
 
-    function getQ(arr, q) {
-        const pos = (arr.length - 1) * q;
-        const base = Math.floor(pos);
-        const rest = pos - base;
-        return arr[base + 1] !== undefined ? arr[base] + rest * (arr[base+1] - arr[base]) : arr[base];
+    function calculateMode(arr) {
+        const f = {}; arr.forEach(x => f[x] = (f[x] || 0) + 1);
+        const max = Math.max(...Object.values(f));
+        const modes = Object.keys(f).filter(k => f[k] === max);
+        return modes.length === arr.length ? "None" : modes.slice(0,2).join(', ');
     }
 
-    function updateChart(data) {
-        if(chart) chart.destroy();
-        chart = new Chart(document.getElementById('mainChart'), {
+    function updateChart(sorted) {
+        if(activeChart) activeChart.destroy();
+        activeChart = new Chart(document.getElementById('mainChart'), {
             type: 'line',
-            data: { labels: data.map((_,i)=>i), datasets: [{ label: 'Sorted Curve', data: data, borderColor: '#00f2ff', tension: 0.4, fill: true, backgroundColor: 'rgba(0, 242, 255, 0.05)' }]},
+            data: { labels: sorted.map((_,i)=>i), datasets: [{ label: 'Sorted Density', data: sorted, borderColor: '#00f2ff', backgroundColor: 'rgba(0, 242, 255, 0.05)', fill: true, tension: 0.4 }] },
             options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } }
         });
     }
 
-    // Default Demo
-    document.getElementById('dataInput').value = Array.from({length: 50}, () => Math.floor(Math.random() * 100)).join(', ');
+    // Init
+    document.getElementById('input').value = "12, 15, 14, 18, 22, 24, 19, 17, 16, 20, 25, 30, 11, 13, 15, 16, 17, 18, 21, 23";
     runAnalysis();
 </script>
 </body>
