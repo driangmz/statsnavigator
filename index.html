@@ -3,193 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Zenith | Singularity</title>
+    <title>Statistics Calculator | Solve whatever comes to mind!</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg: #020205; --glass: rgba(15, 15, 25, 0.7); --border: rgba(255, 255, 255, 0.1);
-            --primary: #00f2ff; --secondary: #7000ff; --accent: #ff0055;
-            --glow: 0 0 20px rgba(0, 242, 255, 0.3);
+            --bg: #010103; --panel: #0a0a0f; --border: #1a1a24;
+            --primary: #00ffcc; --secondary: #9d00ff; --accent: #ff0055;
+            --text: #e2e2e7; --dim: #71717a;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Space Grotesk', sans-serif; }
-        body { background: var(--bg); color: #fff; overflow-x: hidden; scroll-behavior: smooth; }
+        body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; }
 
-        /* --- NEURAL LAUNCH INTERFACE --- */
-        #launch-gate {
-            position: fixed; inset: 0; z-index: 5000; background: var(--bg);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 1s cubic-bezier(0.8, 0, 0.2, 1);
-        }
-        .gate-ring {
-            position: absolute; width: 400px; height: 400px; border: 2px solid var(--primary);
-            border-radius: 50%; opacity: 0.2; animation: pulse 4s infinite;
-        }
-        .gate-label { font-size: 5rem; font-weight: 900; letter-spacing: -5px; z-index: 10; }
-        .gate-label span { color: var(--primary); text-shadow: var(--glow); }
-
-        /* --- MAIN WORKSPACE --- */
-        #os-interface { display: none; opacity: 0; padding: 40px 20px; transition: 1.5s; }
-        .grid-engine { 
-            display: grid; grid-template-columns: 1fr 3fr; gap: 25px; max-width: 1700px; margin: 0 auto; 
-        }
-
-        .sidebar { display: flex; flex-direction: column; gap: 20px; }
-        .panel { 
-            background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--border);
-            padding: 30px; border-radius: 30px; box-shadow: var(--glow);
-        }
+        /* --- LIVE UI LAYOUT --- */
+        #app-shell { display: grid; grid-template-columns: 380px 1fr; height: 100vh; opacity: 0; transition: 1s; }
         
+        .sidebar { 
+            background: var(--panel); border-right: 1px solid var(--border); 
+            display: flex; flex-direction: column; padding: 25px; overflow-y: auto;
+        }
+
+        .main-stage { padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+
+        /* --- REAL-TIME INPUT --- */
+        .input-header { color: var(--primary); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 10px; }
         textarea { 
-            width: 100%; height: 180px; background: transparent; border: none; 
-            color: var(--primary); font-size: 1.1rem; outline: none; resize: none; font-family: 'Fira Code', monospace;
+            width: 100%; height: 250px; background: #000; border: 1px solid var(--border);
+            border-radius: 15px; padding: 15px; color: var(--primary); font-family: 'Fira Code', monospace;
+            font-size: 0.95rem; outline: none; resize: none; border-left: 4px solid var(--primary);
         }
 
-        .stats-matrix { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; 
+        /* --- STATS GRID --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+        .stat-card { 
+            background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 15px; 
+            border-radius: 12px; transition: 0.2s;
         }
-        .node { 
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 20px; 
-            border-radius: 20px; cursor: help; position: relative; transition: 0.4s;
+        .stat-card:hover { border-color: var(--primary); background: rgba(0,255,204,0.03); }
+        .stat-card label { font-size: 0.6rem; color: var(--dim); text-transform: uppercase; font-weight: 800; }
+        .stat-card .val { font-size: 1.3rem; font-weight: 800; display: block; margin-top: 5px; color: #fff; }
+
+        /* --- CHARTS --- */
+        .viz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex-grow: 1; }
+        .chart-container { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 20px; height: 350px; }
+
+        /* --- WELCOME OVERLAY --- */
+        #overlay {
+            position: fixed; inset: 0; z-index: 9999; background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .node:hover { background: rgba(0, 242, 255, 0.05); border-color: var(--primary); }
-        .node label { font-size: 0.65rem; color: #888; text-transform: uppercase; letter-spacing: 2px; }
-        .node .val { font-size: 1.6rem; font-weight: 800; display: block; margin-top: 5px; }
-
-        /* --- ADVANCED GRAPHING --- */
-        .viz-center { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .chart-card { background: var(--glass); border: 1px solid var(--border); border-radius: 30px; padding: 25px; height: 450px; }
-
-        .btn { 
-            padding: 15px 30px; border-radius: 15px; border: 1px solid var(--primary); 
-            background: transparent; color: var(--primary); cursor: pointer; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+        .btn-ignite {
+            padding: 20px 60px; font-size: 1.2rem; font-weight: 900; color: #000;
+            background: var(--primary); border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 30px var(--primary); transition: 0.3s;
         }
-        .btn:hover { background: var(--primary); color: #000; box-shadow: var(--glow); }
 
-        @keyframes pulse { 0% { transform: scale(0.8); opacity: 0.1; } 50% { opacity: 0.3; } 100% { transform: scale(1.3); opacity: 0; } }
+        #matrix-canvas { position: absolute; inset: 0; opacity: 0.1; z-index: -1; }
     </style>
 </head>
 <body>
 
-<div id="launch-gate">
-    <div class="gate-ring"></div>
-    <div class="gate-label">NEXUS<span>ZENITH</span></div>
-    <p style="color: #666; margin: 20px 0 40px;">v11.0 Singularity Edition | Neural Analytics Platform</p>
-    <button class="btn" onclick="ignite()">Ignite OS</button>
+<div id="overlay">
+    <canvas id="matrix-canvas"></canvas>
+    <h1 style="font-size: 5rem; font-weight: 900; margin-bottom: 30px;">LIVE<span>ZENITH</span></h1>
+    <button class="btn-ignite" onclick="ignite()">START REAL-TIME STREAM</button>
 </div>
 
-<div id="os-interface">
-    <div class="grid-engine">
-        <div class="sidebar">
-            <div class="panel">
-                <h3>Neural Input</h3>
-                <textarea id="mainInput" placeholder="Paste data stream..."></textarea>
-                <div style="display:flex; gap:10px; margin-top:20px;">
-                    <button class="btn" style="flex:1" onclick="gen(500)">Stress 500</button>
-                </div>
-            </div>
-            <div class="panel">
-                <h3>Trend Forecast</h3>
-                <p id="forecast" style="color: var(--primary); font-size: 0.9rem;">Waiting for data sync...</p>
-            </div>
+<div id="app-shell">
+    <aside class="sidebar">
+        <div class="input-header">CORE DATA STREAM</div>
+        <textarea id="liveInput" placeholder="Type or paste numbers here... (e.g. 10, 45, 22, 89)"></textarea>
+        
+        <div style="margin: 25px 0 15px; font-size: 0.8rem; color: var(--secondary); font-weight: 800;">QUICK ACTIONS</div>
+        <button class="btn-ignite" style="padding: 10px; font-size: 0.7rem; width: 100%; margin-bottom: 10px;" onclick="random(50)">INJECT 50 SAMPLES</button>
+        <button class="btn-ignite" style="padding: 10px; font-size: 0.7rem; width: 100%; background: var(--accent); box-shadow: none;" onclick="location.reload()">TERMINATE</button>
+        
+        <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px;">
+            <div id="ai-insight" style="font-size: 0.8rem; color: var(--dim); line-height: 1.4;">Waiting for active stream...</div>
         </div>
+    </aside>
 
-        <div class="main-content">
-            <div class="stats-matrix" id="statsDisplay" style="margin-bottom:25px;"></div>
-            
-            <div class="viz-center">
-                <div class="chart-card"><canvas id="densityChart"></canvas></div>
-                <div class="chart-card"><canvas id="volatilityChart"></canvas></div>
-                <div class="chart-card"><canvas id="zScoreChart"></canvas></div>
-                <div class="chart-card"><canvas id="predictionChart"></canvas></div>
-            </div>
+    <main class="main-stage">
+        <div class="stats-grid" id="statsDisplay"></div>
+        <div class="viz-grid">
+            <div class="chart-container"><canvas id="c1"></canvas></div>
+            <div class="chart-container"><canvas id="c2"></canvas></div>
+            <div class="chart-container"><canvas id="c3"></canvas></div>
+            <div class="chart-container"><canvas id="c4"></canvas></div>
         </div>
-    </div>
+    </main>
 </div>
 
 <script>
-    let activeCharts = [];
+    // --- LIVE ENGINE ---
+    const input = document.getElementById('liveInput');
+    let charts = [];
 
     function ignite() {
-        document.getElementById('launch-gate').style.transform = 'translateY(-100%)';
-        setTimeout(() => {
-            const os = document.getElementById('os-interface');
-            os.style.display = 'block';
-            setTimeout(() => os.style.opacity = '1', 100);
-        }, 800);
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('app-shell').style.opacity = '1';
+        random(20);
     }
 
-    const input = document.getElementById('mainInput');
+    // TRIGGER ON EVERY KEYSTROKE
     input.addEventListener('input', () => {
-        clearTimeout(window.syncTimer);
-        window.syncTimer = setTimeout(runSingularity, 1000);
+        computeLive();
     });
 
-    function gen(n) {
-        input.value = Array.from({length:n}, () => (Math.random()*1000).toFixed(2)).join(', ');
-        runSingularity();
+    function random(n) {
+        let vals = Array.from({length: n}, () => (Math.random() * 100).toFixed(2));
+        input.value = vals.join(', ');
+        computeLive();
     }
 
-    function runSingularity() {
-        const data = input.value.replace(/[^\d.-]/g, ' ').trim().split(/\s+/).map(Number).filter(n => !isNaN(n));
-        if (data.length < 5) return;
+    function computeLive() {
+        const raw = input.value.replace(/[^\d.-]/g, ' ').trim();
+        const data = raw.split(/\s+/).map(Number).filter(n => !isNaN(n));
+        
+        if (data.length < 2) return;
 
-        const n = data.length, sorted = [...data].sort((a,b)=>a-b);
-        const sum = data.reduce((a,b)=>a+b, 0), mean = sum/n;
-        const vari = data.reduce((a,b)=>a+Math.pow(b-mean,2),0)/(n-1), std = Math.sqrt(vari);
-        
-        // --- PREDICTIVE TREND (Linear Regression) ---
-        let xSum=0, ySum=0, xySum=0, x2Sum=0;
-        data.forEach((y, x) => { xSum += x; ySum += y; xySum += x*y; x2Sum += x*x; });
-        const slope = (n*xySum - xSum*ySum) / (n*x2Sum - xSum*xSum);
-        const intercept = (ySum - slope*xSum) / n;
-        
-        const metrics = [
-            {l: 'Mean', v: mean.toFixed(2)}, {l: 'Median', v: (n%2==0?(sorted[n/2-1]+sorted[n/2])/2:sorted[Math.floor(n/2)]).toFixed(2)},
-            {l: 'Std Dev', v: std.toFixed(2)}, {l: 'Variance', v: vari.toFixed(2)},
-            {l: 'Range', v: (sorted[n-1]-sorted[0]).toFixed(2)}, {l: 'IQR', v: (sorted[Math.floor(n*0.75)]-sorted[Math.floor(n*0.25)]).toFixed(2)},
-            {l: 'Trend Slope', v: slope.toFixed(4)}, {l: 'Skewness', v: ((data.reduce((a,b)=>a+Math.pow(b-mean,3),0)/n)/Math.pow(std,3)).toFixed(3)}
+        const n = data.length;
+        const sorted = [...data].sort((a, b) => a - b);
+        const sum = data.reduce((a, b) => a + b, 0);
+        const mean = sum / n;
+        const vari = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1);
+        const std = Math.sqrt(vari);
+        const mid = Math.floor(n / 2);
+        const median = n % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+        const q1 = sorted[Math.floor(n * 0.25)], q3 = sorted[Math.floor(n * 0.75)], iqr = q3 - q1;
+        const range = sorted[n - 1] - sorted[0];
+
+        // Advanced metrics
+        const skew = (data.reduce((a, b) => a + Math.pow(b - mean, 3), 0) / n) / Math.pow(std, 3);
+        const cv = (std / mean) * 100;
+
+        const stats = [
+            {l: 'Mean (μ)', v: mean.toFixed(2)}, {l: 'Median (M)', v: median.toFixed(2)},
+            {l: 'Std Dev (σ)', v: std.toFixed(2)}, {l: 'Variance (σ²)', v: vari.toFixed(2)},
+            {l: 'IQR', v: iqr.toFixed(2)}, {l: 'Range', v: range.toFixed(2)},
+            {l: 'Skewness', v: skew.toFixed(3)}, {l: 'Volatility', v: cv.toFixed(1) + '%'}
         ];
 
-        document.getElementById('statsDisplay').innerHTML = metrics.map(m => `
-            <div class="node"><label>${m.l}</label><span class="val">${m.v}</span></div>
+        document.getElementById('statsDisplay').innerHTML = stats.map(s => `
+            <div class="stat-card"><label>${s.l}</label><span class="val">${s.v}</span></div>
         `).join('');
 
-        document.getElementById('forecast').innerText = slope > 0 ? "Forecast: Bullish Growth Detected" : "Forecast: Regression/Bearish Drift";
+        document.getElementById('ai-insight').innerHTML = `
+            <b>Live Analysis:</b> Your data is ${skew > 0 ? 'positively' : 'negatively'} skewed with 
+            a spread of ${range.toFixed(0)} units. Samples: ${n}.
+        `;
 
-        updateCharts(data, sorted, mean, std, slope, intercept);
+        renderLiveCharts(data, sorted, mean, std, q1, q3, median);
     }
 
-    function updateCharts(data, sorted, mean, std, slope, intercept) {
-        activeCharts.forEach(c => c.destroy()); activeCharts = [];
-        const baseOpt = { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' } }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } };
+    function renderLiveCharts(data, sorted, mean, std, q1, q3, median) {
+        charts.forEach(c => c.destroy()); charts = [];
+        const opt = { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#1a1a24' } }, y: { grid: { color: '#1a1a24' } } } };
 
-        // 1. Density Curve
-        activeCharts.push(new Chart(document.getElementById('densityChart'), {
-            type:'line', data:{ labels:sorted.map((_,i)=>i), datasets:[{ label: 'Distribution', data:sorted, borderColor: '#00f2ff', fill: true, backgroundColor: 'rgba(0, 242, 255, 0.1)', pointRadius:0 }] }, options: baseOpt
-        }));
-
-        // 2. Z-Score Heatmap (Relative Scale)
-        const zScores = data.map(v => (v - mean) / std);
-        activeCharts.push(new Chart(document.getElementById('zScoreChart'), {
-            type:'bar', data:{ labels:zScores.map((_,i)=>i), datasets:[{ label: 'Z-Score Intensity', data:zScores, backgroundColor: zScores.map(z => z > 0 ? '#00f2ff' : '#ff0055') }] }, options: baseOpt
-        }));
-
-        // 3. Regression Prediction
-        const predLine = data.map((_, x) => slope * x + intercept);
-        activeCharts.push(new Chart(document.getElementById('predictionChart'), {
-            type:'line', data:{ labels:data.map((_,i)=>i), datasets:[
-                { label: 'Actual', data: data, borderColor: 'rgba(255,255,255,0.2)', type: 'scatter' },
-                { label: 'Prediction', data: predLine, borderColor: '#7000ff', borderDash: [5,5], pointRadius:0 }
-            ]}, options: baseOpt
-        }));
-
-        // 4. Volatility Index
-        activeCharts.push(new Chart(document.getElementById('volatilityChart'), {
-            type:'radar', data:{ labels:['Stability','Growth','Outliers','Volume','Spread'], datasets:[{ data:[100-(std/mean*100), slope*100, data.filter(v=>Math.abs(v-mean)>std*2).length*10, data.length/10, (sorted[n-1]-sorted[0])/10], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.1)' }] }, options: baseOpt
-        }));
+        charts.push(new Chart(document.getElementById('c1'), { type: 'line', data: { labels: sorted.map((_, i) => i), datasets: [{ data: sorted, borderColor: '#00ffcc', fill: true, backgroundColor: 'rgba(0,255,204,0.1)', pointRadius: 0 }] }, options: opt }));
+        charts.push(new Chart(document.getElementById('c2'), { type: 'bar', data: { labels: data.map((_, i) => i), datasets: [{ data: data, backgroundColor: '#9d00ff' }] }, options: opt }));
+        charts.push(new Chart(document.getElementById('c3'), { type: 'scatter', data: { datasets: [{ data: data.map((v, i) => ({ x: i, y: v })), backgroundColor: '#ff0055' }] }, options: opt }));
+        charts.push(new Chart(document.getElementById('c4'), { type: 'radar', data: { labels: ['Min', 'Q1', 'Median', 'Q3', 'Max'], datasets: [{ data: [sorted[0], q1, median, q3, sorted[n - 1]], borderColor: '#00ffcc', backgroundColor: 'rgba(0,255,204,0.1)' }] }, options: opt }));
     }
+
+    // Background matrix
+    const c = document.getElementById('matrix-canvas');
+    const ctx = c.getContext('2d');
+    let d = [];
+    function m() {
+        c.width = window.innerWidth; c.height = window.innerHeight;
+        for(let i=0; i<c.width/20; i++) d[i] = 1;
+    }
+    m();
+    function dr() {
+        ctx.fillStyle = 'rgba(1,1,3,0.1)'; ctx.fillRect(0,0,c.width,c.height);
+        ctx.fillStyle = '#00ffcc';
+        for(let i=0; i<d.length; i++) {
+            ctx.fillText("01"[Math.floor(Math.random()*2)], i*20, d[i]*20);
+            if(d[i]*20 > c.height && Math.random() > 0.975) d[i] = 0;
+            d[i]++;
+        }
+    }
+    setInterval(dr, 50);
 </script>
 </body>
-</html>    
+</html>
