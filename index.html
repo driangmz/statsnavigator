@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Zenith | OMEGA-LOCK ARCHITECT</title>
+    <title>Nexus Zenith | OMEGA-LOCK LIVE</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
@@ -279,7 +279,7 @@
         <canvas id="matrix-canvas"></canvas>
         <div class="lock-container">
             <div class="lock-logo">NEXUS<span>ZENITH</span></div>
-            <div class="lock-sub">RESTRICTED ACCESS // V30000</div>
+            <div class="lock-sub">RESTRICTED ACCESS // V35000</div>
             
             <div class="pin-display">
                 <div class="pin-dot" id="d1"></div>
@@ -312,13 +312,13 @@
             </div>
             
             <div class="input-wrapper">
-                <div class="input-label">Core Data Stream</div>
-                <textarea id="input" placeholder="Inject raw numeric sequence..."></textarea>
+                <div class="input-label">Real-Time Data Stream</div>
+                <textarea id="input" placeholder="Inject raw numeric sequence..." oninput="compute(false)"></textarea>
             </div>
             
             <div class="btn-group">
-                <button class="btn-run" style="flex:2" onclick="compute()">
-                    <span>⚡</span> INITIATE
+                <button class="btn-run" style="flex:2" onclick="compute(true)">
+                    <span>⚡</span> FORCE SYNC
                 </button>
                 <button class="btn-run btn-sec" style="flex:1" onclick="demo()">DEMO</button>
                 <button class="btn-run btn-sec" style="flex:1" onclick="clearData()">CLR</button>
@@ -330,11 +330,11 @@
             </div>
 
             <div class="console-log" id="sys-console">
-                <div class="log-entry"><span class="log-time">[SYS]</span> <span class="log-msg">Omega-Lock Secure Shell active.</span></div>
+                <div class="log-entry"><span class="log-time">[SYS]</span> <span class="log-msg">Omega-Lock Live Core active. Awaiting stream...</span></div>
             </div>
 
             <div style="font-size:0.7rem; color:var(--text-dim); text-align:center; cursor:pointer; opacity:0.7;" onclick="openVersionModal()">
-                CENTURION VER: <span style="color:var(--accent); font-weight:700;">30000.0 ARCHITECT</span>
+                CENTURION VER: <span style="color:var(--accent); font-weight:700;">35000.0 LIVE</span>
             </div>
         </aside>
 
@@ -413,19 +413,19 @@
             <h2 style="color:var(--text); margin-bottom:40px;">SYSTEM CHANGELOG</h2>
             
             <div class="v-entry">
-                <div class="v-ver">v30000.0 OMEGA-LOCK ARCHITECT</div>
+                <div class="v-ver">v35000.0 LIVE SYNC</div>
                 <div class="v-date">Latest Build</div>
+                <div class="v-desc">Activated "Zero-Latency" Real-Time Engine. Added Null-State Handling (automatic reset on empty input). Removed manual trigger requirement for standard operations.</div>
+            </div>
+            <div class="v-entry">
+                <div class="v-ver">v30000.0 OMEGA-LOCK ARCHITECT</div>
+                <div class="v-date">Previous Build</div>
                 <div class="v-desc">Added Pie & Doughnut graphs to Visual Kernel. Implemented Export CSV/JSON modules. Expanded Formula Library to 200+ entries. Integrated Sturges' Rule for frequency binning.</div>
             </div>
             <div class="v-entry">
                 <div class="v-ver">v20000.0 HYPER-NOVA</div>
-                <div class="v-date">Previous Build</div>
-                <div class="v-desc">Added Data Matrix Tab for row-by-row Z-score analysis. Implemented System Console for real-time logging. Enhanced Glassmorphism UI and Chart.js rendering.</div>
-            </div>
-            <div class="v-entry">
-                <div class="v-ver">v11000.0 ULTIMA</div>
                 <div class="v-date">Legacy Build</div>
-                <div class="v-desc">Dynamic Theme Engine. System Version Page.</div>
+                <div class="v-desc">Added Data Matrix Tab. Implemented System Console. Enhanced Glassmorphism UI.</div>
             </div>
         </div>
     </div>
@@ -449,7 +449,7 @@
         const pin = pinInput.value;
         const container = document.querySelector('.lock-container');
         if (pin === "0000") {
-            log("Access Granted. Decrypting UI...");
+            log("Access Granted. Live Core Online.");
             document.getElementById('security-gate').style.opacity = '0';
             document.getElementById('app-core').style.opacity = '1';
             setTimeout(() => {
@@ -624,7 +624,7 @@
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
             meta: { system: "NEXUS ZENITH", timestamp: new Date() },
             data: currentData,
-            metrics: computedMetrics // Global computed object
+            metrics: computedMetrics 
         }));
         const link = document.createElement("a");
         link.setAttribute("href", dataStr);
@@ -635,24 +635,56 @@
         log("JSON Export initiated.");
     }
 
-    function compute() {
+    // --- NULL STATE RESET ---
+    function resetDashboard() {
+        const nullVal = "0.00";
+        const grids = ['core', 'adv', 'dist', 'risk', 'inference', 'percent'];
+        
+        grids.forEach(id => {
+            const container = document.getElementById('grid-'+id);
+            if(container) {
+                // Keep the structure but zero values
+                Array.from(container.children).forEach(card => {
+                    const valDiv = card.querySelector('.val');
+                    if(valDiv) valDiv.innerText = nullVal;
+                });
+            }
+        });
+        
+        document.getElementById('matrix-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-dim)">Stream Inactive</td></tr>`;
+        
+        // Clear Charts
+        charts.forEach(c => c.destroy());
+        charts = [];
+        log("Stream interrupted. Dashboard reset to Null State.");
+    }
+
+    function compute(isManual = false) {
         const raw = document.getElementById('input').value;
+        if (!raw.trim()) {
+            resetDashboard();
+            return;
+        }
+
         const data = raw.split(/[,\s\n]+/).map(Number).filter(n => !isNaN(n));
         
-        if(data.length < 3) {
-            log("ERR: Data stream insufficient (N<3).");
-            return alert("Please enter at least 3 numbers.");
+        if(data.length < 2) {
+            // Not enough data for meaningful stats
+            resetDashboard();
+            if(isManual) log("ERR: Insufficient data points (N < 2).");
+            return;
         }
+
         currentData = data;
-        log(`Parsing vector [N=${data.length}]... Success.`);
-        log(`Executing mathematical kernels...`);
+        // Optimization: Do not log on every keystroke to avoid spamming console
+        if(isManual) log(`Processing vector [N=${data.length}]...`);
         
         const n = data.length;
         const sorted = [...data].sort((a,b)=>a-b);
         const sum = data.reduce((a,b)=>a+b, 0);
         const mean = sum/n;
         const ss = data.reduce((a,b)=>a + Math.pow(b-mean,2), 0);
-        const vari = ss/(n-1);
+        const vari = n > 1 ? ss/(n-1) : 0;
         const std = Math.sqrt(vari);
 
         const getP = (p) => {
@@ -674,8 +706,8 @@
         const rms = Math.sqrt(data.reduce((a,b)=>a+b*b,0)/n);
         
         const m3=getM(3), m4=getM(4), m5=getM(5), m6=getM(6);
-        const skew = m3/Math.pow(Math.sqrt(ss/n),3);
-        const kurt = (m4/Math.pow(Math.sqrt(ss/n),4))-3;
+        const skew = std !== 0 ? m3/Math.pow(Math.sqrt(ss/n),3) : 0;
+        const kurt = std !== 0 ? (m4/Math.pow(Math.sqrt(ss/n),4))-3 : 0;
         const sem = std/Math.sqrt(n);
         const downside = data.filter(x=>x<0);
         const sortino = downside.length ? mean/Math.sqrt(downside.reduce((a,b)=>a+b*b,0)/downside.length) : 0;
@@ -701,16 +733,16 @@
             ],
             dist: [
                 ["Skewness (Fisher)", skew], ["Kurtosis (Excess)", kurt], ["Moment 5", m5], ["Moment 6", m6],
-                ["Jarque-Bera", (n/6)*(skew**2 + kurt**2/4)], ["Coeff of Variation", (std/mean)*100]
+                ["Jarque-Bera", (n/6)*(skew**2 + kurt**2/4)], ["Coeff of Variation", mean!==0 ? (std/mean)*100 : 0]
             ],
             risk: [
-                ["Standard Error", sem], ["Sharpe Ratio", mean/std], ["Sortino Ratio", sortino],
-                ["Crest Factor", Math.max(...data.map(Math.abs))/rms], ["Signal Energy", data.reduce((a,b)=>a+b*b,0)],
-                ["Signal-to-Noise", mean/std], ["Entropy", entropy]
+                ["Standard Error", sem], ["Sharpe Ratio", std!==0 ? mean/std : 0], ["Sortino Ratio", sortino],
+                ["Crest Factor", rms!==0 ? Math.max(...data.map(Math.abs))/rms : 0], ["Signal Energy", data.reduce((a,b)=>a+b*b,0)],
+                ["Signal-to-Noise", std!==0 ? mean/std : 0], ["Entropy", entropy]
             ],
             inference: [
                 ["95% CI Lower", mean-1.96*sem], ["95% CI Upper", mean+1.96*sem],
-                ["99% CI Lower", mean-2.576*sem], ["T-Statistic", mean/sem]
+                ["99% CI Lower", mean-2.576*sem], ["T-Statistic", sem!==0 ? mean/sem : 0]
             ],
             percent: Array.from({length: 20}, (_, i) => [`P${(i+1)*5}`, getP((i+1)*0.05)])
         };
@@ -727,8 +759,10 @@
         }
 
         // --- RENDER MATRIX ---
-        const matrixHTML = data.map((x, i) => {
-            const z = (x - mean) / std;
+        // Limit matrix render to first 200 rows for performance during live typing
+        const displayData = data.slice(0, 200);
+        const matrixHTML = displayData.map((x, i) => {
+            const z = std !== 0 ? (x - mean) / std : 0;
             const dev = x - mean;
             const sqDev = dev * dev;
             return `<tr>
@@ -738,11 +772,14 @@
                 <td>${sqDev.toFixed(4)}</td>
                 <td style="font-weight:bold; color:${Math.abs(z)>2?'var(--warning)':'var(--text)'}">${z.toFixed(4)}</td>
             </tr>`;
-        }).join('');
+        }).join('') + (data.length > 200 ? `<tr><td colspan="5" style="text-align:center; padding:10px; color:var(--text-dim)">... (${data.length-200} more rows hidden for performance) ...</td></tr>` : '');
         document.getElementById('matrix-body').innerHTML = matrixHTML;
 
-        log("Calculation complete. Rendering visual stack...");
-        renderCharts(data, sorted);
+        // Debounce chart rendering slightly to prevent lag on fast typing
+        if(window.chartTimeout) clearTimeout(window.chartTimeout);
+        window.chartTimeout = setTimeout(() => {
+            renderCharts(data, sorted);
+        }, 100);
     }
 
     function renderCharts(data, sorted) {
@@ -761,6 +798,7 @@
         ];
         const common = { 
             responsive: true, maintainAspectRatio: false, 
+            animation: false, // Disable animation for instant updates
             plugins: { legend: { display: false } }, 
             scales: { x: { grid: { color: gridColor }, ticks: {color: textDim} }, y: { grid: { color: gridColor }, ticks: {color: textDim} } } 
         };
@@ -797,7 +835,6 @@
             pieLabels.push(`${low.toFixed(1)} - ${high.toFixed(1)}`);
             data.forEach(x => { if(x >= low && x < high) pieData[i]++; });
         }
-        // Catch max value
         if (data.includes(max)) pieData[binCount-1]++;
 
         charts.push(new Chart(ctx[4], {
@@ -810,7 +847,7 @@
                     borderColor: gridColor
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {color:textDim} } }, scales: { x: {display:false}, y: {display:false} } }
+            options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'right', labels: {color:textDim} } }, scales: { x: {display:false}, y: {display:false} } }
         }));
 
         // 6. Doughnut (Quartile Composition)
@@ -830,17 +867,15 @@
                     borderColor: gridColor
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {color:textDim} } }, scales: { x: {display:false}, y: {display:false} } }
+            options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'right', labels: {color:textDim} } }, scales: { x: {display:false}, y: {display:false} } }
         }));
-        
-        log("Visual kernel initialized.");
     }
 
-    function clearData() { document.getElementById('input').value = ''; log("Input buffer cleared."); }
+    function clearData() { document.getElementById('input').value = ''; resetDashboard(); }
     function demo() { 
         document.getElementById('input').value = Array.from({length:50}, ()=> (Math.random()*100).toFixed(2)).join(', '); 
         log("Demo data injected.");
-        compute(); 
+        compute(true); 
     }
 </script>
 </body>
