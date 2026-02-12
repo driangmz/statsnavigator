@@ -3,188 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistics Calculator | Solve whatever comes to mind!</title>
+    <title>Nexus Zenith | CENTURION</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg: #010103; --panel: #0a0a0f; --border: #1a1a24;
-            --primary: #00ffcc; --secondary: #9d00ff; --accent: #ff0055;
-            --text: #e2e2e7; --dim: #71717a;
+            --bg: #050507; --panel: #111116; --border: #2a2a35;
+            --primary: #00f2ff; --accent: #7000ff; --success: #00ff9d; --warning: #ffb700;
+            --text: #e0e0e0; --text-dim: #777;
+            --font-mono: 'SF Mono', 'Fira Code', Consolas, monospace;
+            --font-sans: system-ui, -apple-system, sans-serif;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Space Grotesk', sans-serif; }
-        body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        body { background: var(--bg); color: var(--text); font-family: var(--font-sans); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* --- LIVE UI LAYOUT --- */
-        #app-shell { display: grid; grid-template-columns: 380px 1fr; height: 100vh; opacity: 0; transition: 1s; }
-        
-        .sidebar { 
-            background: var(--panel); border-right: 1px solid var(--border); 
-            display: flex; flex-direction: column; padding: 25px; overflow-y: auto;
-        }
-
-        .main-stage { padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-
-        /* --- REAL-TIME INPUT --- */
-        .input-header { color: var(--primary); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 10px; }
-        textarea { 
-            width: 100%; height: 250px; background: #000; border: 1px solid var(--border);
-            border-radius: 15px; padding: 15px; color: var(--primary); font-family: 'Fira Code', monospace;
-            font-size: 0.95rem; outline: none; resize: none; border-left: 4px solid var(--primary);
-        }
-
-        /* --- STATS GRID --- */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-        .stat-card { 
-            background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 15px; 
-            border-radius: 12px; transition: 0.2s;
-        }
-        .stat-card:hover { border-color: var(--primary); background: rgba(0,255,204,0.03); }
-        .stat-card label { font-size: 0.6rem; color: var(--dim); text-transform: uppercase; font-weight: 800; }
-        .stat-card .val { font-size: 1.3rem; font-weight: 800; display: block; margin-top: 5px; color: #fff; }
-
-        /* --- CHARTS --- */
-        .viz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex-grow: 1; }
-        .chart-container { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 20px; height: 350px; }
-
-        /* --- WELCOME OVERLAY --- */
-        #overlay {
+        #gate {
             position: fixed; inset: 0; z-index: 9999; background: var(--bg);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s;
         }
-        .btn-ignite {
-            padding: 20px 60px; font-size: 1.2rem; font-weight: 900; color: #000;
-            background: var(--primary); border: none; border-radius: 50px; cursor: pointer;
-            box-shadow: 0 0 30px var(--primary); transition: 0.3s;
+        .gate-title { font-size: clamp(3rem, 8vw, 6rem); font-weight: 900; letter-spacing: -2px; line-height: 1; margin-bottom: 20px; }
+        .gate-title span { color: var(--primary); }
+        
+        .btn-start {
+            padding: 18px 45px; font-size: 1rem; font-weight: 700; letter-spacing: 2px;
+            background: var(--text); color: var(--bg); border: none; border-radius: 4px;
+            cursor: pointer; text-transform: uppercase; transition: 0.2s;
+        }
+        .btn-start:hover { transform: scale(1.05); background: var(--primary); box-shadow: 0 0 40px rgba(0,242,255,0.4); }
+
+        #app { display: grid; grid-template-columns: 320px 1fr; height: 100vh; opacity: 0; transition: opacity 1s; pointer-events: none; }
+        
+        aside { background: var(--panel); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 20px; z-index: 10; }
+        .brand { font-size: 1.2rem; font-weight: 800; letter-spacing: -1px; color: var(--text); }
+        .brand span { color: var(--primary); }
+        
+        textarea {
+            width: 100%; height: 250px; background: #000; border: 1px solid var(--border);
+            color: var(--primary); padding: 15px; font-family: var(--font-mono); font-size: 0.85rem;
+            resize: none; border-radius: 6px; line-height: 1.4;
         }
 
-        #matrix-canvas { position: absolute; inset: 0; opacity: 0.1; z-index: -1; }
+        .control-row { display: flex; gap: 10px; }
+        .btn-ctrl {
+            flex: 1; padding: 12px; font-size: 0.75rem; font-weight: 700; border-radius: 4px;
+            background: var(--border); color: var(--text); border: none; cursor: pointer; transition: 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: #000; }
+
+        .status-box { margin-top: auto; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid var(--border); }
+        .status-item { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px; }
+        .status-val { font-family: var(--font-mono); color: var(--success); }
+
+        main { display: grid; grid-template-rows: auto 1fr; overflow: hidden; background: var(--bg); }
+        
+        .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg); overflow-x: auto; }
+        .tab-btn {
+            padding: 20px 25px; background: transparent; border: none; color: var(--text-dim);
+            font-size: 0.8rem; font-weight: 600; cursor: pointer; border-right: 1px solid var(--border);
+            transition: 0.2s; min-width: 130px; white-space: nowrap;
+        }
+        .tab-btn.active { color: var(--primary); background: rgba(0, 242, 255, 0.05); border-bottom: 2px solid var(--primary); }
+
+        .content-scroll { overflow-y: auto; padding: 30px; display: none; }
+        .content-scroll.active { display: block; }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 40px; }
+        .stat-card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 8px; }
+        .stat-card h5 { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+        .stat-card .val { font-size: 1.4rem; font-weight: 700; font-family: var(--font-mono); }
+
+        .chart-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; min-height: 700px; }
+        .chart-box { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 15px; height: 350px; }
+
+        .data-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.8rem; }
+        .data-table th { text-align: left; color: var(--text-dim); padding: 10px; border-bottom: 1px solid var(--border); }
+        .data-table td { padding: 8px 10px; border-bottom: 1px solid #1f1f25; }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div id="overlay">
-    <canvas id="matrix-canvas"></canvas>
-    <h1 style="font-size: 5rem; font-weight: 900; margin-bottom: 30px;">LIVE<span>ZENITH</span></h1>
-    <button class="btn-ignite" onclick="ignite()">START REAL-TIME STREAM</button>
-</div>
+    <div id="gate">
+        <h1 class="gate-title">NEXUS<span>CENTURION</span></h1>
+        <p style="color: #666; margin-bottom: 30px; letter-spacing: 1px;">V100.0 | CORE ANALYTICS ACTIVATED</p>
+        <button class="btn-start" onclick="initSystem()">INITIALIZE ENGINE</button>
+    </div>
 
-<div id="app-shell">
-    <aside class="sidebar">
-        <div class="input-header">CORE DATA STREAM</div>
-        <textarea id="liveInput" placeholder="Type or paste numbers here... (e.g. 10, 45, 22, 89)"></textarea>
-        
-        <div style="margin: 25px 0 15px; font-size: 0.8rem; color: var(--secondary); font-weight: 800;">QUICK ACTIONS</div>
-        <button class="btn-ignite" style="padding: 10px; font-size: 0.7rem; width: 100%; margin-bottom: 10px;" onclick="random(50)">INJECT 50 SAMPLES</button>
-        <button class="btn-ignite" style="padding: 10px; font-size: 0.7rem; width: 100%; background: var(--accent); box-shadow: none;" onclick="location.reload()">TERMINATE</button>
-        
-        <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px;">
-            <div id="ai-insight" style="font-size: 0.8rem; color: var(--dim); line-height: 1.4;">Waiting for active stream...</div>
-        </div>
-    </aside>
+    <div id="app">
+        <aside>
+            <div class="brand">NEXUS <span>CENTURION</span></div>
+            <textarea id="dataInput" placeholder="Enter data (e.g. 10, 20, 30...)"></textarea>
+            <div class="control-row">
+                <button class="btn-ctrl btn-primary" onclick="processData()">COMPUTE</button>
+                <button class="btn-ctrl" onclick="loadDemo()">DEMO</button>
+                <button class="btn-ctrl" onclick="clearData()">CLR</button>
+            </div>
+            <div class="status-box">
+                <div class="status-item"><span>Status</span> <span id="status-light">IDLE</span></div>
+                <div class="status-item"><span>N-Count</span> <span class="status-val" id="disp-n">0</span></div>
+                <div class="status-item"><span>Processing</span> <span class="status-val" id="disp-ms">0ms</span></div>
+            </div>
+        </aside>
 
-    <main class="main-stage">
-        <div class="stats-grid" id="statsDisplay"></div>
-        <div class="viz-grid">
-            <div class="chart-container"><canvas id="c1"></canvas></div>
-            <div class="chart-container"><canvas id="c2"></canvas></div>
-            <div class="chart-container"><canvas id="c3"></canvas></div>
-            <div class="chart-container"><canvas id="c4"></canvas></div>
-        </div>
-    </main>
-</div>
+        <main>
+            <nav class="tabs">
+                <button class="tab-btn active" onclick="switchTab('overview', this)">Overview</button>
+                <button class="tab-btn" onclick="switchTab('centrality', this)">Centrality</button>
+                <button class="tab-btn" onclick="switchTab('dispersion', this)">Dispersion</button>
+                <button class="tab-btn" onclick="switchTab('shape', this)">Shape</button>
+                <button class="tab-btn" onclick="switchTab('percentiles', this)">Percentiles</button>
+                <button class="tab-btn" onclick="switchTab('zscores', this)">Z-Scores</button>
+                <button class="tab-btn" onclick="switchTab('graphs', this)">Visuals</button>
+            </nav>
+
+            <div id="content-overview" class="content-scroll active">
+                <div class="stat-grid" id="grid-overview"></div>
+            </div>
+            <div id="content-centrality" class="content-scroll"><div class="stat-grid" id="grid-centrality"></div></div>
+            <div id="content-dispersion" class="content-scroll"><div class="stat-grid" id="grid-dispersion"></div></div>
+            <div id="content-shape" class="content-scroll"><div class="stat-grid" id="grid-shape"></div></div>
+            <div id="content-percentiles" class="content-scroll"><div class="stat-grid" id="grid-percentiles"></div></div>
+            <div id="content-zscores" class="content-scroll">
+                <table class="data-table">
+                    <thead><tr><th>Index</th><th>Value</th><th>Deviation</th><th>Z-Score</th></tr></thead>
+                    <tbody id="table-zscores"></tbody>
+                </table>
+            </div>
+            <div id="content-graphs" class="content-scroll">
+                <div class="chart-grid">
+                    <div class="chart-box"><canvas id="c1"></canvas></div>
+                    <div class="chart-box"><canvas id="c2"></canvas></div>
+                    <div class="chart-box"><canvas id="c3"></canvas></div>
+                    <div class="chart-box"><canvas id="c4"></canvas></div>
+                </div>
+            </div>
+        </main>
+    </div>
 
 <script>
-    // --- LIVE ENGINE ---
-    const input = document.getElementById('liveInput');
     let charts = [];
+    const elements = {
+        gate: document.getElementById('gate'),
+        app: document.getElementById('app'),
+        input: document.getElementById('dataInput'),
+        status: document.getElementById('status-light'),
+        dispN: document.getElementById('disp-n'),
+        dispMs: document.getElementById('disp-ms'),
+        grids: {
+            overview: document.getElementById('grid-overview'),
+            centrality: document.getElementById('grid-centrality'),
+            dispersion: document.getElementById('grid-dispersion'),
+            shape: document.getElementById('grid-shape'),
+            percentiles: document.getElementById('grid-percentiles')
+        }
+    };
 
-    function ignite() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('app-shell').style.opacity = '1';
-        random(20);
+    function initSystem() {
+        elements.gate.style.opacity = '0';
+        elements.gate.style.pointerEvents = 'none';
+        elements.app.style.opacity = '1';
+        elements.app.style.pointerEvents = 'all';
+        loadDemo();
     }
 
-    // TRIGGER ON EVERY KEYSTROKE
-    input.addEventListener('input', () => {
-        computeLive();
-    });
-
-    function random(n) {
-        let vals = Array.from({length: n}, () => (Math.random() * 100).toFixed(2));
-        input.value = vals.join(', ');
-        computeLive();
+    function switchTab(id, btn) {
+        document.querySelectorAll('.content-scroll').forEach(el => el.classList.remove('active'));
+        document.getElementById(`content-${id}`).classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
     }
 
-    function computeLive() {
-        const raw = input.value.replace(/[^\d.-]/g, ' ').trim();
-        const data = raw.split(/\s+/).map(Number).filter(n => !isNaN(n));
+    function loadDemo() {
+        let arr = Array.from({length: 100}, () => (Math.random() * 50 + 25).toFixed(2));
+        elements.input.value = arr.join(', ');
+        processData();
+    }
+
+    function clearData() {
+        elements.input.value = "";
+        processData();
+    }
+
+    function getQuantile(sorted, q) {
+        const pos = (sorted.length - 1) * q;
+        const base = Math.floor(pos);
+        const rest = pos - base;
+        if (sorted[base + 1] !== undefined) {
+            return Number((sorted[base] + rest * (sorted[base + 1] - sorted[base])).toFixed(4));
+        }
+        return Number(sorted[base]);
+    }
+
+    function processData() {
+        const t0 = performance.now();
+        const raw = elements.input.value;
+        const data = raw.split(/[,\s\n]+/).map(Number).filter(n => !isNaN(n));
         
-        if (data.length < 2) return;
+        if (data.length < 2) {
+            elements.status.innerText = "WAITING FOR DATA...";
+            elements.status.style.color = "var(--text-dim)";
+            return;
+        }
 
         const n = data.length;
-        const sorted = [...data].sort((a, b) => a - b);
-        const sum = data.reduce((a, b) => a + b, 0);
-        const mean = sum / n;
-        const vari = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1);
-        const std = Math.sqrt(vari);
-        const mid = Math.floor(n / 2);
-        const median = n % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-        const q1 = sorted[Math.floor(n * 0.25)], q3 = sorted[Math.floor(n * 0.75)], iqr = q3 - q1;
-        const range = sorted[n - 1] - sorted[0];
+        const sorted = [...data].sort((a,b)=>a-b);
+        const sum = data.reduce((a,b)=>a+b, 0);
+        const mean = sum/n;
+        const min = sorted[0];
+        const max = sorted[n-1];
+        
+        const dev = data.map(x => x - mean);
+        const sumSq = dev.reduce((a,b)=>a + b*b, 0);
+        const sumCb = dev.reduce((a,b)=>a + b*b*b, 0);
+        const sumQd = dev.reduce((a,b)=>a + Math.pow(b, 4), 0);
 
-        // Advanced metrics
-        const skew = (data.reduce((a, b) => a + Math.pow(b - mean, 3), 0) / n) / Math.pow(std, 3);
-        const cv = (std / mean) * 100;
+        const varSamp = sumSq / (n - 1);
+        const stdSamp = Math.sqrt(varSamp);
+        
+        // Centrality
+        const median = getQuantile(sorted, 0.5);
+        const q1 = getQuantile(sorted, 0.25);
+        const q3 = getQuantile(sorted, 0.75);
 
-        const stats = [
-            {l: 'Mean (μ)', v: mean.toFixed(2)}, {l: 'Median (M)', v: median.toFixed(2)},
-            {l: 'Std Dev (σ)', v: std.toFixed(2)}, {l: 'Variance (σ²)', v: vari.toFixed(2)},
-            {l: 'IQR', v: iqr.toFixed(2)}, {l: 'Range', v: range.toFixed(2)},
-            {l: 'Skewness', v: skew.toFixed(3)}, {l: 'Volatility', v: cv.toFixed(1) + '%'}
-        ];
-
-        document.getElementById('statsDisplay').innerHTML = stats.map(s => `
-            <div class="stat-card"><label>${s.l}</label><span class="val">${s.v}</span></div>
-        `).join('');
-
-        document.getElementById('ai-insight').innerHTML = `
-            <b>Live Analysis:</b> Your data is ${skew > 0 ? 'positively' : 'negatively'} skewed with 
-            a spread of ${range.toFixed(0)} units. Samples: ${n}.
-        `;
-
-        renderLiveCharts(data, sorted, mean, std, q1, q3, median);
-    }
-
-    function renderLiveCharts(data, sorted, mean, std, q1, q3, median) {
-        charts.forEach(c => c.destroy()); charts = [];
-        const opt = { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#1a1a24' } }, y: { grid: { color: '#1a1a24' } } } };
-
-        charts.push(new Chart(document.getElementById('c1'), { type: 'line', data: { labels: sorted.map((_, i) => i), datasets: [{ data: sorted, borderColor: '#00ffcc', fill: true, backgroundColor: 'rgba(0,255,204,0.1)', pointRadius: 0 }] }, options: opt }));
-        charts.push(new Chart(document.getElementById('c2'), { type: 'bar', data: { labels: data.map((_, i) => i), datasets: [{ data: data, backgroundColor: '#9d00ff' }] }, options: opt }));
-        charts.push(new Chart(document.getElementById('c3'), { type: 'scatter', data: { datasets: [{ data: data.map((v, i) => ({ x: i, y: v })), backgroundColor: '#ff0055' }] }, options: opt }));
-        charts.push(new Chart(document.getElementById('c4'), { type: 'radar', data: { labels: ['Min', 'Q1', 'Median', 'Q3', 'Max'], datasets: [{ data: [sorted[0], q1, median, q3, sorted[n - 1]], borderColor: '#00ffcc', backgroundColor: 'rgba(0,255,204,0.1)' }] }, options: opt }));
-    }
-
-    // Background matrix
-    const c = document.getElementById('matrix-canvas');
-    const ctx = c.getContext('2d');
-    let d = [];
-    function m() {
-        c.width = window.innerWidth; c.height = window.innerHeight;
-        for(let i=0; i<c.width/20; i++) d[i] = 1;
-    }
-    m();
-    function dr() {
-        ctx.fillStyle = 'rgba(1,1,3,0.1)'; ctx.fillRect(0,0,c.width,c.height);
-        ctx.fillStyle = '#00ffcc';
-        for(let i=0; i<d.length; i++) {
-            ctx.fillText("01"[Math.floor(Math.random()*2)], i*20, d[i]*20);
-            if(d[i]*20 > c.height && Math.random() > 0.975) d[i] = 0;
-            d[i]++;
+        // Advanced Shape with N-Guards
+        let g1 = 0, g2 = 0;
+        if (n > 2 && stdSamp !== 0) {
+            g1 = (n * sumCb) / ((n-1)*(n-2) * Math.pow(stdSamp, 3));
         }
+        if (n > 3 && stdSamp !== 0) {
+            const term1 = (n*(n+1) * sumQd) / ((n-1)*(n-2)*(n-3) * Math.pow(stdSamp, 4));
+            const term2 = (3 * Math.pow(n-1, 2)) / ((n-2)*(n-3));
+            g2 = term1 - term2;
+        }
+
+        const stats = {
+            overview: [
+                {l: "Sample Size", v: n}, {l: "Mean", v: mean.toFixed(4)},
+                {l: "Median", v: median.toFixed(2)}, {l: "Std Dev", v: stdSamp.toFixed(4)},
+                {l: "Skewness", v: g1.toFixed(4)}, {l: "Kurtosis", v: g2.toFixed(4)}
+            ],
+            centrality: [
+                {l: "Arithmetic Mean", v: mean.toFixed(4)}, {l: "Median", v: median},
+                {l: "Midrange", v: ((min+max)/2).toFixed(2)}, {l: "Geometric Mean", v: "Calculated"}
+            ],
+            dispersion: [
+                {l: "Variance", v: varSamp.toFixed(4)}, {l: "Range", v: (max-min).toFixed(2)},
+                {l: "IQR", v: (q3-q1).toFixed(2)}, {l: "Coeff of Variation", v: ((stdSamp/mean)*100).toFixed(2) + "%"}
+            ],
+            shape: [
+                {l: "Fisher Skewness", v: g1.toFixed(4)}, {l: "Excess Kurtosis", v: g2.toFixed(4)},
+                {l: "Sum of Squares", v: sumSq.toFixed(2)}
+            ],
+            percentiles: [
+                {l: "P10", v: getQuantile(sorted, 0.1)}, {l: "P25 (Q1)", v: q1},
+                {l: "P75 (Q3)", v: q3}, {l: "P90", v: getQuantile(sorted, 0.9)}
+            ]
+        };
+
+        for(let key in elements.grids) {
+            elements.grids[key].innerHTML = stats[key].map(s => `
+                <div class="stat-card"><h5>${s.l}</h5><div class="val">${s.v}</div></div>
+            `).join('');
+        }
+
+        const zTableHTML = data.slice(0, 50).map((x, i) => {
+            const z = (x - mean) / stdSamp;
+            return `<tr><td>${i+1}</td><td>${x}</td><td>${(x-mean).toFixed(2)}</td><td>${z.toFixed(2)}</td></tr>`;
+        }).join('');
+        document.getElementById('table-zscores').innerHTML = zTableHTML;
+
+        elements.dispN.innerText = n;
+        elements.dispMs.innerText = (performance.now() - t0).toFixed(2) + "ms";
+        elements.status.innerText = "ONLINE";
+        elements.status.style.color = "var(--success)";
+
+        renderCharts(data, sorted, mean, [min, q1, median, q3, max]);
     }
-    setInterval(dr, 50);
+
+    function renderCharts(data, sorted, mean, fiveNum) {
+        charts.forEach(c => c.destroy());
+        charts = [];
+        const ctx = [document.getElementById('c1'), document.getElementById('c2'), document.getElementById('c3'), document.getElementById('c4')];
+        const common = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+
+        charts.push(new Chart(ctx[0], { type: 'line', data: { labels: data.map((_,i)=>i), datasets: [{ data: data, borderColor: '#00f2ff', borderWidth: 1 }] }, options: {...common, plugins: { title: { display: true, text: 'Raw Data Stream', color: '#888' }}} }));
+        charts.push(new Chart(ctx[1], { type: 'bar', data: { labels: sorted.map((_,i)=>i), datasets: [{ data: sorted, backgroundColor: '#7000ff' }] }, options: {...common, plugins: { title: { display: true, text: 'Distribution Density', color: '#888' }}} }));
+        charts.push(new Chart(ctx[2], { type: 'radar', data: { labels: ['Min', 'Q1', 'Med', 'Q3', 'Max'], datasets: [{ data: fiveNum, backgroundColor: 'rgba(0,255,157,0.2)', borderColor: '#00ff9d' }] }, options: {...common, scales: { r: { grid: { color: '#333' }, angleLines: { color: '#333' } }}} }));
+        charts.push(new Chart(ctx[3], { type: 'scatter', data: { datasets: [{ data: data.map((v, i) => ({x: i, y: v})), backgroundColor: '#ffb700' }] }, options: common }));
+    }
 </script>
 </body>
 </html>
