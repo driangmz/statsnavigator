@@ -217,7 +217,7 @@
         /* MATRIX TABLE */
         .table-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .data-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.75rem; text-align: right; }
-        .data-table th { text-align: right; padding: 20px; color: var(--text-dim); border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); font-weight: 700; text-transform: uppercase; }
+        .data-table th { text-align: right; padding: 20px; color: var(--text-dim); border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); font-weight: 700; text-transform: uppercase; white-space: nowrap; }
         .data-table td { padding: 15px; border-bottom: 1px solid var(--border); color: var(--text); }
         .data-table tr:last-child td { border-bottom: none; }
         .data-table tr:hover td { background: var(--card-hover); }
@@ -286,13 +286,66 @@
         .v-date { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         .v-desc { font-size: 0.95rem; line-height: 1.7; color: var(--text); }
 
+        /* --- MOBILE REFORGED (PATCH v40000.1) --- */
         @media (max-width: 1000px) {
-            body { flex-direction: column; height: auto; overflow: auto; }
-            aside { width: 100%; height: auto; padding: 20px; }
-            main { height: auto; }
+            body { 
+                flex-direction: column; 
+                height: auto; 
+                min-height: 100vh;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            aside { 
+                width: 100%; 
+                height: auto; 
+                padding: 25px; 
+                flex-shrink: 0;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            main { 
+                height: auto; 
+                overflow: visible;
+                display: block;
+            }
+            .viewport { 
+                overflow: visible;
+                height: auto; 
+                display: none; 
+                padding: 20px;
+            }
+            .viewport.active { display: block; }
+            
+            /* Responsive Grids */
             .chart-grid { grid-template-columns: 1fr; }
-            .modal-card { width: 90%; padding: 25px; }
-            #admin-core { grid-template-columns: 1fr; }
+            .stat-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+            
+            /* Horizontal Scroll for Tables */
+            .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .data-table { min-width: 600px; } /* Force scroll on small screens */
+            
+            /* Admin Mobile Fixes */
+            #admin-core {
+                grid-template-columns: 1fr;
+                height: auto;
+                overflow: visible;
+            }
+            .adm-sidebar {
+                border-right: none;
+                border-bottom: 1px solid #222;
+            }
+            .adm-main {
+                overflow: visible;
+                height: auto;
+                padding: 20px;
+            }
+            .adm-log-row { grid-template-columns: 70px 1fr 60px; font-size: 0.7rem; }
+            
+            /* Modal Adjustments */
+            .modal-card { width: 95%; padding: 25px; margin: 20px 0; max-height: 90vh; }
+            
+            /* Security Gate Mobile */
+            .lock-container { width: 90%; padding: 30px; }
         }
     </style>
 </head>
@@ -357,7 +410,7 @@
             </div>
 
             <div style="font-size:0.7rem; color:var(--text-dim); text-align:center; cursor:pointer; opacity:0.7;" onclick="openVersionModal()">
-                CENTURION VER: <span style="color:var(--accent); font-weight:700;">40000.0 HYPERVISOR</span>
+                CENTURION VER: <span style="color:var(--accent); font-weight:700;">40000.1 MOBILE</span>
             </div>
         </aside>
 
@@ -521,19 +574,19 @@
             <h2 style="color:var(--text); margin-bottom:40px;">SYSTEM CHANGELOG</h2>
             
             <div class="v-entry">
-                <div class="v-ver">v40000.0 HYPERVISOR</div>
+                <div class="v-ver">v40000.1 MOBILE REFORGED</div>
                 <div class="v-date">Current Build</div>
-                <div class="v-desc">Added "9999" Admin PIN with dedicated Hypervisor Backend. Integrated simulated server telemetry (CPU/RAM). Added User Management and System Config views.</div>
+                <div class="v-desc">Implemented Responsive Vertical Stacking for mobile devices. Added horizontal scroll support for Data Matrix tables.</div>
+            </div>
+            <div class="v-entry">
+                <div class="v-ver">v40000.0 HYPERVISOR</div>
+                <div class="v-date">Previous Build</div>
+                <div class="v-desc">Added "9999" Admin PIN with dedicated Hypervisor Backend. Integrated simulated server telemetry (CPU/RAM).</div>
             </div>
             <div class="v-entry">
                 <div class="v-ver">v35000.0 LIVE SYNC</div>
-                <div class="v-date">Previous Build</div>
+                <div class="v-date">Legacy Build</div>
                 <div class="v-desc">Activated "Zero-Latency" Real-Time Engine. Added Null-State Handling.</div>
-            </div>
-            <div class="v-entry">
-                <div class="v-ver">v30000.0 OMEGA-LOCK ARCHITECT</div>
-                <div class="v-date">Previous Build</div>
-                <div class="v-desc">Added Pie & Doughnut graphs. Implemented Export modules. Expanded Formula Library.</div>
             </div>
         </div>
     </div>
@@ -985,7 +1038,7 @@
         // 3. Scatter
         charts.push(new Chart(ctx[2], { type: 'scatter', data: { datasets: [{ data: data.map((v, i) => ({x: i, y: v})), backgroundColor: '#ff2e63', pointRadius: 3 }] }, options: common }));
 
-        // 4. Radar
+        // 4. Radar (5-Num Summary)
         const min = sorted[0], max = sorted[sorted.length-1];
         const q1 = sorted[Math.floor(sorted.length*0.25)];
         const med = sorted[Math.floor(sorted.length*0.5)];
@@ -997,7 +1050,8 @@
             options: { ...common, scales: { r: { grid: { color: gridColor }, angleLines: { color: gridColor }, pointLabels: { color: textDim } } } } 
         }));
 
-        // 5. Pie Chart
+        // 5. Pie Chart (Frequency Bins)
+        // Sturges' Rule for bins: k = 1 + 3.322 log(n)
         const binCount = Math.ceil(1 + 3.322 * Math.log10(data.length));
         const binWidth = (max - min) / binCount;
         let pieLabels = [], pieData = new Array(binCount).fill(0);
@@ -1022,7 +1076,7 @@
             options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'right', labels: {color:textDim} } }, scales: { x: {display:false}, y: {display:false} } }
         }));
 
-        // 6. Doughnut
+        // 6. Doughnut (Quartile Composition)
         const qData = [
             data.filter(x => x < q1).length,
             data.filter(x => x >= q1 && x < med).length,
@@ -1051,4 +1105,4 @@
     }
 </script>
 </body>
-</html>
+</html>     
